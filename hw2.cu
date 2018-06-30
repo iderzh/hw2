@@ -9,6 +9,7 @@
 #define IMG_DIMENSION 32
 #define N_IMG_PAIRS 10000
 #define NREQUESTS 100000
+#define NSTREAMS 64
 
 typedef unsigned char uchar;
 #define OUT
