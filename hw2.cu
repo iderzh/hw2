@@ -34,9 +34,6 @@ struct stream_node {
 	cudaStream_t Stream;
 	int stream_id;
 	int req_in_processing;
-	uchar *gpu_image1, *gpu_image2;
-	int *gpu_hist1, *gpu_hist2;
-	double *gpu_hist_distance;
 };
 typedef stream_node streamNode;
 
@@ -246,35 +243,31 @@ int main(int argc, char *argv[]) {
     rate_limit_init(&rate_limit, load, 0);
 
     /* TODO allocate / initialize memory, streams, etc... */
-    //uchar *gpu_image1, *gpu_image2; // TODO: allocate with cudaMalloc
-    //int *gpu_hist1, *gpu_hist2; // TODO: allocate with cudaMalloc
-    //double *gpu_hist_distance; //TODO: allocate with cudaMalloc
+    uchar *gpu_image1, *gpu_image2; // TODO: allocate with cudaMalloc
+    int *gpu_hist1, *gpu_hist2; // TODO: allocate with cudaMalloc
+    double *gpu_hist_distance; //TODO: allocate with cudaMalloc
     double *cpu_hist_distance;
 
     streamNode streams_array[NSTREAMS] = {0};
     int free_streams = NSTREAMS;
 
-    // Init array
-    for (int j = 0; j < NSTREAMS; j++) {
-    	streams_array[j].stream_id = j;
-    	streams_array[j].req_in_processing = -1;
-    	CUDA_CHECK( cudaStreamCreate(&streams_array[j].Stream));
-    	CUDA_CHECK(cudaMalloc(&streams_array[j].gpu_image1, IMG_DIMENSION * IMG_DIMENSION));
-    	CUDA_CHECK(cudaMalloc(&streams_array[j].gpu_image2, IMG_DIMENSION * IMG_DIMENSION));
-    	CUDA_CHECK(cudaMalloc(&streams_array[j].gpu_hist1, 256 * sizeof(int)));
-    	CUDA_CHECK(cudaMalloc(&streams_array[j].gpu_hist2, 256 * sizeof(int)));
-    	CUDA_CHECK(cudaMalloc(&streams_array[j].gpu_hist_distance, 256 * sizeof(double)));
-    }
-
-    //CUDA_CHECK(cudaMalloc(&gpu_image1, IMG_DIMENSION * IMG_DIMENSION * NSTREAMS));
-    //CUDA_CHECK(cudaMalloc(&gpu_image2, IMG_DIMENSION * IMG_DIMENSION * NSTREAMS));
-    //CUDA_CHECK(cudaMalloc(&gpu_hist1, 256 * sizeof(int) * NSTREAMS));
-    //CUDA_CHECK(cudaMalloc(&gpu_hist2, 256 * sizeof(int) * NSTREAMS));
-    //CUDA_CHECK(cudaMalloc(&gpu_hist_distance, 256 * sizeof(double) * NSTREAMS));
+    CUDA_CHECK(cudaMalloc(&gpu_image1, IMG_DIMENSION * IMG_DIMENSION * NSTREAMS));
+    CUDA_CHECK(cudaMalloc(&gpu_image2, IMG_DIMENSION * IMG_DIMENSION * NSTREAMS));
+    CUDA_CHECK(cudaMalloc(&gpu_hist1, 256 * sizeof(int) * NSTREAMS));
+    CUDA_CHECK(cudaMalloc(&gpu_hist2, 256 * sizeof(int) * NSTREAMS));
+    CUDA_CHECK(cudaMalloc(&gpu_hist_distance, 256 * sizeof(double) * NSTREAMS));
     CUDA_CHECK(cudaHostAlloc(&cpu_hist_distance, sizeof(double), 0));
 
     double ti = get_time_msec();
     if (mode == PROGRAM_MODE_STREAMS) {
+
+        // Init array of stream nodes
+        for (int j = 0; j < NSTREAMS; j++) {
+        	streams_array[j].stream_id = j;
+        	streams_array[j].req_in_processing = -1;
+        	CUDA_CHECK( cudaStreamCreate(&streams_array[j].Stream));
+        }
+
         for (int i = 0; i < NREQUESTS; i++) {
 
             /* TODO query (don't block) streams for any completed requests.
@@ -285,14 +278,10 @@ int main(int argc, char *argv[]) {
         		if ( streams_array[j].req_in_processing != -1) {
         			if ( cudaStreamQuery(streams_array[j].Stream) == cudaSuccess) {
         				req_t_end[streams_array[j].req_in_processing] = get_time_msec();
-        				CUDA_CHECK( cudaMemcpyAsync(cpu_hist_distance, streams_array[j].gpu_hist_distance, sizeof(double), cudaMemcpyDeviceToHost, streams_array[j].Stream));
-        				CUDA_CHECK( cudaStreamSynchronize(streams_array[j].Stream));
+        				CUDA_CHECK( cudaMemcpyAsync(cpu_hist_distance, &(gpu_hist_distance[streams_array[j].stream_id * 256]), sizeof(double), cudaMemcpyDeviceToHost, streams_array[j].Stream));
         				total_distance += *cpu_hist_distance;
         				streams_array[j].req_in_processing = -1;
         				free_streams++;
-        				//printf("Stream %d completed with result %f\n", streams_array[j].stream_id,*cpu_hist_distance);
-        			} else {
-        				//printf("Stream %d is busy\n", streams_array[j].stream_id);
         			}
         		}
         	}
@@ -316,16 +305,15 @@ int main(int argc, char *argv[]) {
             	busy_streams->req_in_processing = i;
             	free_streams--;
 
-
                 // Enqueue data copy and kernel execution for selected stream
-                CUDA_CHECK(cudaMemcpyAsync(busy_streams->gpu_image1, &images1[img_idx * IMG_DIMENSION * IMG_DIMENSION], IMG_DIMENSION * IMG_DIMENSION, cudaMemcpyHostToDevice, busy_streams->Stream));
-                CUDA_CHECK(cudaMemcpyAsync(busy_streams->gpu_image2, &images2[img_idx * IMG_DIMENSION * IMG_DIMENSION], IMG_DIMENSION * IMG_DIMENSION, cudaMemcpyHostToDevice, busy_streams->Stream));
-                CUDA_CHECK(cudaMemsetAsync(busy_streams->gpu_hist1, 0, 256 * sizeof(int), busy_streams->Stream));
-                CUDA_CHECK(cudaMemsetAsync(busy_streams->gpu_hist2, 0, 256 * sizeof(int), busy_streams->Stream));
+                CUDA_CHECK(cudaMemcpyAsync(&(gpu_image1[busy_streams->stream_id * IMG_DIMENSION * IMG_DIMENSION]), &images1[img_idx * IMG_DIMENSION * IMG_DIMENSION], IMG_DIMENSION * IMG_DIMENSION, cudaMemcpyHostToDevice, busy_streams->Stream));
+                CUDA_CHECK(cudaMemcpyAsync(&(gpu_image2[busy_streams->stream_id * IMG_DIMENSION * IMG_DIMENSION]), &images2[img_idx * IMG_DIMENSION * IMG_DIMENSION], IMG_DIMENSION * IMG_DIMENSION, cudaMemcpyHostToDevice, busy_streams->Stream));
+                CUDA_CHECK(cudaMemsetAsync(&(gpu_hist1[busy_streams->stream_id * 256]), 0, 256 * sizeof(int), busy_streams->Stream));
+                CUDA_CHECK(cudaMemsetAsync(&(gpu_hist2[busy_streams->stream_id * 256]), 0, 256 * sizeof(int), busy_streams->Stream));
 
-                gpu_image_to_histogram<<<1, 1024, 0, busy_streams->Stream>>>(busy_streams->gpu_image1, busy_streams->gpu_hist1);
-                gpu_image_to_histogram<<<1, 1024, 0, busy_streams->Stream>>>(busy_streams->gpu_image2, busy_streams->gpu_hist2);
-                gpu_histogram_distance<<<1, 256, 0, busy_streams->Stream>>>(busy_streams->gpu_hist1, busy_streams->gpu_hist2, busy_streams->gpu_hist_distance);
+                gpu_image_to_histogram<<<1, 1024, 0, busy_streams->Stream>>>(&(gpu_image1[busy_streams->stream_id * IMG_DIMENSION * IMG_DIMENSION]), &(gpu_hist1[busy_streams->stream_id * 256]));
+                gpu_image_to_histogram<<<1, 1024, 0, busy_streams->Stream>>>(&(gpu_image2[busy_streams->stream_id * IMG_DIMENSION * IMG_DIMENSION]), &(gpu_hist2[busy_streams->stream_id * 256]));
+                gpu_histogram_distance<<<1, 256, 0, busy_streams->Stream>>>(&(gpu_hist1[busy_streams->stream_id * 256]), &(gpu_hist2[busy_streams->stream_id * 256]), &(gpu_hist_distance[busy_streams->stream_id * 256]));
             }
         }
         /* TODO now make sure to wait for all streams to finish */
@@ -335,6 +323,10 @@ int main(int argc, char *argv[]) {
     			req_t_end[streams_array[j].req_in_processing] = get_time_msec();
     		}
     	}
+
+        for (int j = 0; j < NSTREAMS; j++) {
+        	CUDA_CHECK( cudaStreamDestroy(streams_array[j].Stream));
+        }
 
     } else if (mode == PROGRAM_MODE_QUEUE) {
         for (int i = 0; i < NREQUESTS; i++) {
@@ -356,21 +348,12 @@ int main(int argc, char *argv[]) {
     }
     double tf = get_time_msec();
 
-    //CUDA_CHECK( cudaFree(gpu_image1) );
-    //CUDA_CHECK( cudaFree(gpu_image2) );
-    //CUDA_CHECK( cudaFree(gpu_hist1) );
-    //CUDA_CHECK( cudaFree(gpu_hist2) );
-    //CUDA_CHECK( cudaFree(gpu_hist_distance) );
+    CUDA_CHECK( cudaFree(gpu_image1) );
+    CUDA_CHECK( cudaFree(gpu_image2) );
+    CUDA_CHECK( cudaFree(gpu_hist1) );
+    CUDA_CHECK( cudaFree(gpu_hist2) );
+    CUDA_CHECK( cudaFree(gpu_hist_distance) );
     CUDA_CHECK( cudaFreeHost(cpu_hist_distance) );
-
-    for (int j = 0; j < NSTREAMS; j++) {
-    	CUDA_CHECK( cudaStreamDestroy(streams_array[j].Stream));
-    	CUDA_CHECK( cudaFree(streams_array[j].gpu_image1) );
-    	CUDA_CHECK( cudaFree(streams_array[j].gpu_image2) );
-    	CUDA_CHECK( cudaFree(streams_array[j].gpu_hist1) );
-    	CUDA_CHECK( cudaFree(streams_array[j].gpu_hist2) );
-    	CUDA_CHECK( cudaFree(streams_array[j].gpu_hist_distance) );
-    }
 
     double avg_latency = 0;
     for (int j = 0; j < NREQUESTS; j++) {
