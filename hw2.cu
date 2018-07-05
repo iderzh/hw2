@@ -10,6 +10,7 @@
 #define N_IMG_PAIRS 10000
 #define NREQUESTS 100000
 #define NSTREAMS 64
+#define MAXREGCOUNT 32
 
 typedef unsigned char uchar;
 #define OUT
@@ -329,6 +330,39 @@ int main(int argc, char *argv[]) {
         }
 
     } else if (mode == PROGRAM_MODE_QUEUE) {
+    	// Check for CUDA device and calculate amount of CPU<->GPU queues accordingly to it's capabilities
+    	int deviceCount = 0, cuda_device = 0;
+    	CUDA_CHECK( cudaGetDeviceCount(&deviceCount) );
+    	if (deviceCount > 0) {
+    		printf("CUDA Device(s) found, will use first available device: ");
+    	} else {
+    		printf("No CUDA Device found, terminating the program!\n");
+    		assert(0);
+    	}
+    	cudaSetDevice(cuda_device);
+    	cudaDeviceProp deviceProp;
+    	cudaGetDeviceProperties(&deviceProp, cuda_device);
+    	printf("%s\n", deviceProp.name);
+    	if (	threads_queue_mode > IMG_DIMENSION * IMG_DIMENSION  ||
+    			threads_queue_mode <= 0    ||
+    			deviceProp.maxThreadsPerBlock < IMG_DIMENSION * IMG_DIMENSION
+    		)
+    	{
+    		printf("Wrong amount of threads requested for 32x32 images or your device incapable to run 1024 threads in one block,\nPlease enter #threads = 1024 or less.\n");
+    		assert (0);
+    	}
+
+    	unsigned int max_simult_blocks = deviceProp.multiProcessorCount * (deviceProp.maxThreadsPerMultiProcessor / threads_queue_mode);
+    	printf("This device is capable to run %d thread blocks simultaneously.\n", max_simult_blocks);
+    	if ( (deviceProp.regsPerBlock / (max_simult_blocks * threads_queue_mode)) < MAXREGCOUNT) {
+    		max_simult_blocks = deviceProp.regsPerBlock / ( threads_queue_mode * MAXREGCOUNT );
+    		printf("Amount of running blocks (queue pairs) was reduced to %d due to device Registers limitation\n", max_simult_blocks);
+    	}
+    	if ( (deviceProp.sharedMemPerBlock / (2 * (IMG_DIMENSION * IMG_DIMENSION) + 2 * sizeof (int) * 256 + sizeof (double) * 256)) < 1) {
+    		printf("No enough Shared memory per block, terminating the program!\n");
+    		assert(0);
+    	}
+
         for (int i = 0; i < NREQUESTS; i++) {
 
             /* TODO check producer consumer queue for any responses.
