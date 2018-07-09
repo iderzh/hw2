@@ -1,0 +1,840 @@
+
+=== CPU ===
+average distance between images 245.144495
+throughput = 48825.843366 (req/sec)
+
+=== GPU Task Serial ===
+average distance between images 242.949937
+throughput = 22956.424268 (req/sec)
+
+=== Client-Server ===
+CUDA Device(s) found, will use first available device: GeForce GTX 750 Ti
+This device is capable to run 10 thread blocks simultaneously.
+Amount of running blocks (queue pairs) was reduced to 2 due to device Registers limitation
+CPU: CPU-GPU write index #1 was updated by thread 0
+CPU: CPU-GPU write index #1 was updated by thread 1
+CPU: CPU-GPU write index #2 was updated by thread 0
+CPU: CPU-GPU write index #2 was updated by thread 1
+CPU: CPU-GPU write index #3 was updated by thread 0
+CPU: CPU-GPU write index #3 was updated by thread 1
+CPU: CPU-GPU write index #4 was updated by thread 0
+CPU: CPU-GPU write index #4 was updated by thread 1
+CPU: CPU-GPU write index #5 was updated by thread 0
+CPU: CPU-GPU write index #5 was updated by thread 1
+CPU: CPU-GPU write index #6 was updated by thread 0
+CPU: CPU-GPU write index #6 was updated by thread 1
+CPU: CPU-GPU write index #7 was updated by thread 0
+CPU: CPU-GPU write index #7 was updated by thread 1
+CPU: CPU-GPU write index #8 was updated by thread 0
+CPU: CPU-GPU write index #8 was updated by thread 1
+CPU: CPU-GPU write index #9 was updated by thread 0
+CPU: CPU-GPU write index #9 was updated by thread 1
+CPU: CPU-GPU write index #0 was updated by thread 0
+CPU: CPU-GPU write index #0 was updated by thread 1
+CPU: GPU-CPU read index #0 was updated by thread 0, req 0 completed
+CPU: GPU-CPU read index #0 was updated by thread 1, req 1 completed
+CPU: CPU-GPU write index #1 was updated by thread 0
+CPU: CPU-GPU write index #1 was updated by thread 1
+CPU: GPU-CPU read index #1 was updated by thread 1, req 3 completed
+CPU: GPU-CPU read index #1 was updated by thread 0, req 2 completed
+CPU: CPU-GPU write index #2 was updated by thread 0
+CPU: CPU-GPU write index #2 was updated by thread 1
+CPU: GPU-CPU read index #2 was updated by thread 1, req 5 completed
+CPU: GPU-CPU read index #2 was updated by thread 0, req 4 completed
+CPU: CPU-GPU write index #3 was updated by thread 0
+CPU: CPU-GPU write index #3 was updated by thread 1
+CPU: GPU-CPU read index #3 was updated by thread 1, req 7 completed
+CPU: GPU-CPU read index #3 was updated by thread 0, req 6 completed
+CPU: CPU-GPU write index #4 was updated by thread 0
+CPU: CPU-GPU write index #4 was updated by thread 1
+CPU: GPU-CPU read index #4 was updated by thread 1, req 9 completed
+CPU: GPU-CPU read index #4 was updated by thread 0, req 8 completed
+CPU: CPU-GPU write index #5 was updated by thread 0
+CPU: CPU-GPU write index #5 was updated by thread 1
+CPU: GPU-CPU read index #5 was updated by thread 1, req 11 completed
+CPU: GPU-CPU read index #5 was updated by thread 0, req 10 completed
+CPU: CPU-GPU write index #6 was updated by thread 0
+CPU: CPU-GPU write index #6 was updated by thread 1
+CPU: GPU-CPU read index #6 was updated by thread 1, req 13 completed
+CPU: GPU-CPU read index #6 was updated by thread 0, req 12 completed
+CPU: CPU-GPU write index #7 was updated by thread 0
+CPU: CPU-GPU write index #7 was updated by thread 1
+CPU: GPU-CPU read index #7 was updated by thread 1, req 15 completed
+CPU: GPU-CPU read index #7 was updated by thread 0, req 14 completed
+CPU: CPU-GPU write index #8 was updated by thread 0
+CPU: CPU-GPU write index #8 was updated by thread 1
+CPU: GPU-CPU read index #8 was updated by thread 1, req 17 completed
+CPU: GPU-CPU read index #8 was updated by thread 0, req 16 completed
+CPU: CPU-GPU write index #9 was updated by thread 0
+CPU: CPU-GPU write index #9 was updated by thread 1
+CPU: GPU-CPU read index #9 was updated by thread 1, req 19 completed
+CPU: GPU-CPU read index #9 was updated by thread 0, req 18 completed
+CPU: CPU-GPU write index #0 was updated by thread 0
+CPU: CPU-GPU write index #0 was updated by thread 1
+CPU: GPU-CPU read index #0 was updated by thread 1, req 21 completed
+CPU: GPU-CPU read index #0 was updated by thread 0, req 20 completed
+CPU: CPU-GPU write index #1 was updated by thread 0
+CPU: CPU-GPU write index #1 was updated by thread 1
+CPU: GPU-CPU read index #1 was updated by thread 1, req 23 completed
+CPU: GPU-CPU read index #1 was updated by thread 0, req 22 completed
+CPU: CPU-GPU write index #2 was updated by thread 0
+CPU: CPU-GPU write index #2 was updated by thread 1
+CPU: GPU-CPU read index #2 was updated by thread 1, req 25 completed
+CPU: GPU-CPU read index #2 was updated by thread 0, req 24 completed
+CPU: CPU-GPU write index #3 was updated by thread 0
+CPU: CPU-GPU write index #3 was updated by thread 1
+CPU: GPU-CPU read index #3 was updated by thread 1, req 27 completed
+CPU: GPU-CPU read index #3 was updated by thread 0, req 26 completed
+CPU: CPU-GPU write index #4 was updated by thread 0
+CPU: CPU-GPU write index #4 was updated by thread 1
+CPU: GPU-CPU read index #4 was updated by thread 1, req 29 completed
+CPU: GPU-CPU read index #4 was updated by thread 0, req 28 completed
+CPU: CPU-GPU write index #5 was updated by thread 0
+CPU: CPU-GPU write index #5 was updated by thread 1
+CPU: GPU-CPU read index #5 was updated by thread 1, req 31 completed
+CPU: GPU-CPU read index #5 was updated by thread 0, req 30 completed
+CPU: CPU-GPU write index #6 was updated by thread 0
+CPU: CPU-GPU write index #6 was updated by thread 1
+CPU: GPU-CPU read index #6 was updated by thread 1, req 33 completed
+CPU: GPU-CPU read index #6 was updated by thread 0, req 32 completed
+CPU: CPU-GPU write index #7 was updated by thread 0
+CPU: CPU-GPU write index #7 was updated by thread 1
+CPU: GPU-CPU read index #7 was updated by thread 1, req 35 completed
+CPU: GPU-CPU read index #7 was updated by thread 0, req 34 completed
+CPU: CPU-GPU write index #8 was updated by thread 0
+CPU: CPU-GPU write index #8 was updated by thread 1
+CPU: GPU-CPU read index #8 was updated by thread 1, req 37 completed
+CPU: GPU-CPU read index #8 was updated by thread 0, req 36 completed
+CPU: CPU-GPU write index #9 was updated by thread 0
+CPU: CPU-GPU write index #9 was updated by thread 1
+CPU: GPU-CPU read index #9 was updated by thread 1, req 39 completed
+CPU: GPU-CPU read index #9 was updated by thread 0, req 38 completed
+CPU: CPU-GPU write index #0 was updated by thread 0
+CPU: CPU-GPU write index #0 was updated by thread 1
+CPU: GPU-CPU read index #0 was updated by thread 1, req 41 completed
+CPU: GPU-CPU read index #0 was updated by thread 0, req 40 completed
+CPU: CPU-GPU write index #1 was updated by thread 0
+CPU: CPU-GPU write index #1 was updated by thread 1
+CPU: GPU-CPU read index #1 was updated by thread 1, req 43 completed
+CPU: GPU-CPU read index #1 was updated by thread 0, req 42 completed
+CPU: CPU-GPU write index #2 was updated by thread 0
+CPU: CPU-GPU write index #2 was updated by thread 1
+CPU: GPU-CPU read index #2 was updated by thread 1, req 45 completed
+CPU: GPU-CPU read index #2 was updated by thread 0, req 44 completed
+CPU: CPU-GPU write index #3 was updated by thread 0
+CPU: CPU-GPU write index #3 was updated by thread 1
+CPU: GPU-CPU read index #3 was updated by thread 1, req 47 completed
+CPU: GPU-CPU read index #3 was updated by thread 0, req 46 completed
+CPU: CPU-GPU write index #4 was updated by thread 0
+CPU: CPU-GPU write index #4 was updated by thread 1
+CPU: GPU-CPU read index #4 was updated by thread 1, req 49 completed
+CPU: GPU-CPU read index #4 was updated by thread 0, req 48 completed
+CPU: CPU-GPU write index #5 was updated by thread 0
+CPU: CPU-GPU write index #5 was updated by thread 1
+CPU: GPU-CPU read index #5 was updated by thread 1, req 51 completed
+CPU: GPU-CPU read index #5 was updated by thread 0, req 50 completed
+CPU: CPU-GPU write index #6 was updated by thread 0
+CPU: CPU-GPU write index #6 was updated by thread 1
+CPU: GPU-CPU read index #6 was updated by thread 1, req 53 completed
+CPU: GPU-CPU read index #6 was updated by thread 0, req 52 completed
+CPU: CPU-GPU write index #7 was updated by thread 0
+CPU: CPU-GPU write index #7 was updated by thread 1
+CPU: GPU-CPU read index #7 was updated by thread 1, req 55 completed
+CPU: GPU-CPU read index #7 was updated by thread 0, req 54 completed
+CPU: CPU-GPU write index #8 was updated by thread 0
+CPU: CPU-GPU write index #8 was updated by thread 1
+CPU: GPU-CPU read index #8 was updated by thread 1, req 57 completed
+CPU: GPU-CPU read index #8 was updated by thread 0, req 56 completed
+CPU: CPU-GPU write index #9 was updated by thread 0
+CPU: CPU-GPU write index #9 was updated by thread 1
+CPU: GPU-CPU read index #9 was updated by thread 1, req 59 completed
+CPU: GPU-CPU read index #9 was updated by thread 0, req 58 completed
+CPU: CPU-GPU write index #0 was updated by thread 0
+CPU: CPU-GPU write index #0 was updated by thread 1
+CPU: GPU-CPU read index #0 was updated by thread 1, req 61 completed
+CPU: GPU-CPU read index #0 was updated by thread 0, req 60 completed
+CPU: CPU-GPU write index #1 was updated by thread 0
+CPU: CPU-GPU write index #1 was updated by thread 1
+CPU: GPU-CPU read index #1 was updated by thread 1, req 63 completed
+CPU: GPU-CPU read index #1 was updated by thread 0, req 62 completed
+CPU: CPU-GPU write index #2 was updated by thread 0
+CPU: CPU-GPU write index #2 was updated by thread 1
+CPU: GPU-CPU read index #2 was updated by thread 1, req 65 completed
+CPU: GPU-CPU read index #2 was updated by thread 0, req 64 completed
+CPU: CPU-GPU write index #3 was updated by thread 0
+CPU: CPU-GPU write index #3 was updated by thread 1
+CPU: GPU-CPU read index #3 was updated by thread 1, req 67 completed
+CPU: GPU-CPU read index #3 was updated by thread 0, req 66 completed
+CPU: CPU-GPU write index #4 was updated by thread 0
+CPU: CPU-GPU write index #4 was updated by thread 1
+CPU: GPU-CPU read index #4 was updated by thread 1, req 69 completed
+CPU: GPU-CPU read index #4 was updated by thread 0, req 68 completed
+CPU: CPU-GPU write index #5 was updated by thread 0
+CPU: CPU-GPU write index #5 was updated by thread 1
+CPU: GPU-CPU read index #5 was updated by thread 1, req 71 completed
+CPU: GPU-CPU read index #5 was updated by thread 0, req 70 completed
+CPU: CPU-GPU write index #6 was updated by thread 0
+CPU: CPU-GPU write index #6 was updated by thread 1
+CPU: GPU-CPU read index #6 was updated by thread 1, req 73 completed
+CPU: GPU-CPU read index #6 was updated by thread 0, req 72 completed
+CPU: CPU-GPU write index #7 was updated by thread 0
+CPU: CPU-GPU write index #7 was updated by thread 1
+CPU: GPU-CPU read index #7 was updated by thread 1, req 75 completed
+CPU: GPU-CPU read index #7 was updated by thread 0, req 74 completed
+CPU: CPU-GPU write index #8 was updated by thread 0
+CPU: CPU-GPU write index #8 was updated by thread 1
+CPU: GPU-CPU read index #8 was updated by thread 1, req 77 completed
+CPU: GPU-CPU read index #8 was updated by thread 0, req 76 completed
+CPU: CPU-GPU write index #9 was updated by thread 0
+CPU: CPU-GPU write index #9 was updated by thread 1
+CPU: GPU-CPU read index #9 was updated by thread 1, req 79 completed
+CPU: GPU-CPU read index #9 was updated by thread 0, req 78 completed
+CPU: CPU-GPU write index #0 was updated by thread 0
+CPU: CPU-GPU write index #0 was updated by thread 1
+CPU: GPU-CPU read index #0 was updated by thread 1, req 81 completed
+CPU: GPU-CPU read index #0 was updated by thread 0, req 80 completed
+CPU: CPU-GPU write index #1 was updated by thread 0
+CPU: CPU-GPU write index #1 was updated by thread 1
+CPU: GPU-CPU read index #1 was updated by thread 1, req 83 completed
+CPU: GPU-CPU read index #1 was updated by thread 0, req 82 completed
+CPU: CPU-GPU write index #2 was updated by thread 0
+CPU: CPU-GPU write index #2 was updated by thread 1
+CPU: GPU-CPU read index #2 was updated by thread 1, req 85 completed
+CPU: GPU-CPU read index #2 was updated by thread 0, req 84 completed
+CPU: CPU-GPU write index #3 was updated by thread 0
+CPU: CPU-GPU write index #3 was updated by thread 1
+CPU: GPU-CPU read index #3 was updated by thread 1, req 87 completed
+CPU: GPU-CPU read index #3 was updated by thread 0, req 86 completed
+CPU: CPU-GPU write index #4 was updated by thread 0
+CPU: CPU-GPU write index #4 was updated by thread 1
+CPU: GPU-CPU read index #4 was updated by thread 1, req 89 completed
+CPU: GPU-CPU read index #4 was updated by thread 0, req 88 completed
+CPU: CPU-GPU write index #5 was updated by thread 0
+CPU: CPU-GPU write index #5 was updated by thread 1
+CPU: GPU-CPU read index #5 was updated by thread 1, req 91 completed
+CPU: GPU-CPU read index #5 was updated by thread 0, req 90 completed
+CPU: CPU-GPU write index #6 was updated by thread 0
+CPU: CPU-GPU write index #6 was updated by thread 1
+CPU: GPU-CPU read index #6 was updated by thread 1, req 93 completed
+CPU: GPU-CPU read index #6 was updated by thread 0, req 92 completed
+CPU: CPU-GPU write index #7 was updated by thread 0
+CPU: CPU-GPU write index #7 was updated by thread 1
+CPU: GPU-CPU read index #7 was updated by thread 1, req 95 completed
+CPU: GPU-CPU read index #7 was updated by thread 0, req 94 completed
+CPU: CPU-GPU write index #8 was updated by thread 0
+CPU: CPU-GPU write index #8 was updated by thread 1
+CPU: GPU-CPU read index #8 was updated by thread 1, req 97 completed
+CPU: GPU-CPU read index #8 was updated by thread 0, req 96 completed
+CPU: CPU-GPU write index #9 was updated by thread 0
+CPU: CPU-GPU write index #9 was updated by thread 1
+CPU: GPU-CPU read index #9 was updated by thread 1, req 99 completed
+CPU: GPU-CPU read index #9 was updated by thread 0, req 98 completed
+CPU: CPU-GPU write index #0 was updated by thread 0
+CPU: CPU-GPU write index #0 was updated by thread 1
+CPU: GPU-CPU read index #0 was updated by thread 1, req 101 completed
+CPU: GPU-CPU read index #0 was updated by thread 0, req 100 completed
+CPU: CPU-GPU write index #1 was updated by thread 0
+CPU: CPU-GPU write index #1 was updated by thread 1
+CPU: GPU-CPU read index #1 was updated by thread 1, req 103 completed
+CPU: GPU-CPU read index #1 was updated by thread 0, req 102 completed
+CPU: CPU-GPU write index #2 was updated by thread 0
+CPU: CPU-GPU write index #2 was updated by thread 1
+CPU: GPU-CPU read index #2 was updated by thread 1, req 105 completed
+CPU: GPU-CPU read index #2 was updated by thread 0, req 104 completed
+CPU: CPU-GPU write index #3 was updated by thread 0
+CPU: CPU-GPU write index #3 was updated by thread 1
+CPU: GPU-CPU read index #3 was updated by thread 1, req 107 completed
+CPU: GPU-CPU read index #3 was updated by thread 0, req 106 completed
+CPU: CPU-GPU write index #4 was updated by thread 0
+CPU: CPU-GPU write index #4 was updated by thread 1
+CPU: GPU-CPU read index #4 was updated by thread 1, req 109 completed
+CPU: GPU-CPU read index #4 was updated by thread 0, req 108 completed
+CPU: CPU-GPU write index #5 was updated by thread 0
+CPU: CPU-GPU write index #5 was updated by thread 1
+CPU: GPU-CPU read index #5 was updated by thread 1, req 111 completed
+CPU: GPU-CPU read index #5 was updated by thread 0, req 110 completed
+CPU: CPU-GPU write index #6 was updated by thread 0
+CPU: CPU-GPU write index #6 was updated by thread 1
+CPU: GPU-CPU read index #6 was updated by thread 1, req 113 completed
+CPU: GPU-CPU read index #6 was updated by thread 0, req 112 completed
+CPU: CPU-GPU write index #7 was updated by thread 0
+CPU: CPU-GPU write index #7 was updated by thread 1
+CPU: GPU-CPU read index #7 was updated by thread 1, req 115 completed
+CPU: GPU-CPU read index #7 was updated by thread 0, req 114 completed
+CPU: CPU-GPU write index #8 was updated by thread 0
+CPU: CPU-GPU write index #8 was updated by thread 1
+CPU: GPU-CPU read index #8 was updated by thread 1, req 117 completed
+CPU: GPU-CPU read index #8 was updated by thread 0, req 116 completed
+CPU: CPU-GPU write index #9 was updated by thread 0
+CPU: CPU-GPU write index #9 was updated by thread 1
+CPU: GPU-CPU read index #9 was updated by thread 1, req 119 completed
+CPU: GPU-CPU read index #9 was updated by thread 0, req 118 completed
+CPU: CPU-GPU write index #0 was updated by thread 0
+CPU: CPU-GPU write index #0 was updated by thread 1
+CPU: GPU-CPU read index #0 was updated by thread 1, req 121 completed
+CPU: GPU-CPU read index #0 was updated by thread 0, req 120 completed
+CPU: CPU-GPU write index #1 was updated by thread 0
+CPU: CPU-GPU write index #1 was updated by thread 1
+CPU: GPU-CPU read index #1 was updated by thread 1, req 123 completed
+CPU: GPU-CPU read index #1 was updated by thread 0, req 122 completed
+CPU: CPU-GPU write index #2 was updated by thread 0
+CPU: CPU-GPU write index #2 was updated by thread 1
+CPU: GPU-CPU read index #2 was updated by thread 1, req 125 completed
+CPU: GPU-CPU read index #2 was updated by thread 0, req 124 completed
+CPU: CPU-GPU write index #3 was updated by thread 0
+CPU: CPU-GPU write index #3 was updated by thread 1
+CPU: GPU-CPU read index #3 was updated by thread 1, req 127 completed
+CPU: GPU-CPU read index #3 was updated by thread 0, req 126 completed
+CPU: CPU-GPU write index #4 was updated by thread 0
+CPU: CPU-GPU write index #4 was updated by thread 1
+CPU: GPU-CPU read index #4 was updated by thread 1, req 129 completed
+CPU: GPU-CPU read index #4 was updated by thread 0, req 128 completed
+CPU: CPU-GPU write index #5 was updated by thread 0
+CPU: CPU-GPU write index #5 was updated by thread 1
+CPU: GPU-CPU read index #5 was updated by thread 1, req 131 completed
+CPU: GPU-CPU read index #5 was updated by thread 0, req 130 completed
+CPU: CPU-GPU write index #6 was updated by thread 0
+CPU: CPU-GPU write index #6 was updated by thread 1
+CPU: GPU-CPU read index #6 was updated by thread 1, req 133 completed
+CPU: GPU-CPU read index #6 was updated by thread 0, req 132 completed
+CPU: CPU-GPU write index #7 was updated by thread 0
+CPU: CPU-GPU write index #7 was updated by thread 1
+CPU: GPU-CPU read index #7 was updated by thread 1, req 135 completed
+CPU: GPU-CPU read index #7 was updated by thread 0, req 134 completed
+CPU: CPU-GPU write index #8 was updated by thread 0
+CPU: CPU-GPU write index #8 was updated by thread 1
+CPU: GPU-CPU read index #8 was updated by thread 1, req 137 completed
+CPU: GPU-CPU read index #8 was updated by thread 0, req 136 completed
+CPU: CPU-GPU write index #9 was updated by thread 0
+CPU: CPU-GPU write index #9 was updated by thread 1
+CPU: GPU-CPU read index #9 was updated by thread 1, req 139 completed
+CPU: GPU-CPU read index #9 was updated by thread 0, req 138 completed
+CPU: CPU-GPU write index #0 was updated by thread 0
+CPU: CPU-GPU write index #0 was updated by thread 1
+CPU: GPU-CPU read index #0 was updated by thread 1, req 141 completed
+CPU: GPU-CPU read index #0 was updated by thread 0, req 140 completed
+CPU: CPU-GPU write index #1 was updated by thread 0
+CPU: CPU-GPU write index #1 was updated by thread 1
+CPU: GPU-CPU read index #1 was updated by thread 1, req 143 completed
+CPU: GPU-CPU read index #1 was updated by thread 0, req 142 completed
+CPU: CPU-GPU write index #2 was updated by thread 0
+CPU: CPU-GPU write index #2 was updated by thread 1
+CPU: GPU-CPU read index #2 was updated by thread 1, req 145 completed
+CPU: GPU-CPU read index #2 was updated by thread 0, req 144 completed
+CPU: CPU-GPU write index #3 was updated by thread 0
+CPU: CPU-GPU write index #3 was updated by thread 1
+CPU: GPU-CPU read index #3 was updated by thread 1, req 147 completed
+CPU: GPU-CPU read index #3 was updated by thread 0, req 146 completed
+CPU: CPU-GPU write index #4 was updated by thread 0
+CPU: CPU-GPU write index #4 was updated by thread 1
+CPU: GPU-CPU read index #4 was updated by thread 1, req 149 completed
+CPU: GPU-CPU read index #4 was updated by thread 0, req 148 completed
+CPU: CPU-GPU write index #5 was updated by thread 0
+CPU: CPU-GPU write index #5 was updated by thread 1
+CPU: GPU-CPU read index #5 was updated by thread 1, req 151 completed
+CPU: GPU-CPU read index #5 was updated by thread 0, req 150 completed
+CPU: CPU-GPU write index #6 was updated by thread 0
+CPU: CPU-GPU write index #6 was updated by thread 1
+CPU: GPU-CPU read index #6 was updated by thread 1, req 153 completed
+CPU: GPU-CPU read index #6 was updated by thread 0, req 152 completed
+CPU: CPU-GPU write index #7 was updated by thread 0
+CPU: CPU-GPU write index #7 was updated by thread 1
+CPU: GPU-CPU read index #7 was updated by thread 1, req 155 completed
+CPU: GPU-CPU read index #7 was updated by thread 0, req 154 completed
+CPU: CPU-GPU write index #8 was updated by thread 0
+CPU: CPU-GPU write index #8 was updated by thread 1
+CPU: GPU-CPU read index #8 was updated by thread 1, req 157 completed
+CPU: GPU-CPU read index #8 was updated by thread 0, req 156 completed
+CPU: CPU-GPU write index #9 was updated by thread 0
+CPU: CPU-GPU write index #9 was updated by thread 1
+CPU: GPU-CPU read index #9 was updated by thread 1, req 159 completed
+CPU: GPU-CPU read index #9 was updated by thread 0, req 158 completed
+CPU: CPU-GPU write index #0 was updated by thread 0
+CPU: CPU-GPU write index #0 was updated by thread 1
+CPU: GPU-CPU read index #0 was updated by thread 1, req 161 completed
+CPU: GPU-CPU read index #0 was updated by thread 0, req 160 completed
+CPU: CPU-GPU write index #1 was updated by thread 0
+CPU: CPU-GPU write index #1 was updated by thread 1
+CPU: GPU-CPU read index #1 was updated by thread 1, req 163 completed
+CPU: GPU-CPU read index #1 was updated by thread 0, req 162 completed
+CPU: CPU-GPU write index #2 was updated by thread 0
+CPU: CPU-GPU write index #2 was updated by thread 1
+CPU: GPU-CPU read index #2 was updated by thread 1, req 165 completed
+CPU: GPU-CPU read index #2 was updated by thread 0, req 164 completed
+CPU: CPU-GPU write index #3 was updated by thread 0
+CPU: CPU-GPU write index #3 was updated by thread 1
+CPU: GPU-CPU read index #3 was updated by thread 1, req 167 completed
+CPU: GPU-CPU read index #3 was updated by thread 0, req 166 completed
+CPU: CPU-GPU write index #4 was updated by thread 0
+CPU: CPU-GPU write index #4 was updated by thread 1
+CPU: GPU-CPU read index #4 was updated by thread 1, req 169 completed
+CPU: GPU-CPU read index #4 was updated by thread 0, req 168 completed
+CPU: CPU-GPU write index #5 was updated by thread 0
+CPU: CPU-GPU write index #5 was updated by thread 1
+CPU: GPU-CPU read index #5 was updated by thread 1, req 171 completed
+CPU: GPU-CPU read index #5 was updated by thread 0, req 170 completed
+CPU: CPU-GPU write index #6 was updated by thread 0
+CPU: CPU-GPU write index #6 was updated by thread 1
+CPU: GPU-CPU read index #6 was updated by thread 1, req 173 completed
+CPU: GPU-CPU read index #6 was updated by thread 0, req 172 completed
+CPU: CPU-GPU write index #7 was updated by thread 0
+CPU: CPU-GPU write index #7 was updated by thread 1
+CPU: GPU-CPU read index #7 was updated by thread 1, req 175 completed
+CPU: GPU-CPU read index #7 was updated by thread 0, req 174 completed
+CPU: CPU-GPU write index #8 was updated by thread 0
+CPU: CPU-GPU write index #8 was updated by thread 1
+CPU: GPU-CPU read index #8 was updated by thread 1, req 177 completed
+CPU: GPU-CPU read index #8 was updated by thread 0, req 176 completed
+CPU: CPU-GPU write index #9 was updated by thread 0
+CPU: CPU-GPU write index #9 was updated by thread 1
+CPU: GPU-CPU read index #9 was updated by thread 1, req 179 completed
+CPU: GPU-CPU read index #9 was updated by thread 0, req 178 completed
+CPU: CPU-GPU write index #0 was updated by thread 0
+CPU: CPU-GPU write index #0 was updated by thread 1
+CPU: GPU-CPU read index #0 was updated by thread 1, req 181 completed
+CPU: GPU-CPU read index #0 was updated by thread 0, req 180 completed
+CPU: CPU-GPU write index #1 was updated by thread 0
+CPU: CPU-GPU write index #1 was updated by thread 1
+CPU: GPU-CPU read index #1 was updated by thread 1, req 183 completed
+CPU: GPU-CPU read index #1 was updated by thread 0, req 182 completed
+CPU: CPU-GPU write index #2 was updated by thread 0
+CPU: CPU-GPU write index #2 was updated by thread 1
+CPU: GPU-CPU read index #2 was updated by thread 1, req 185 completed
+CPU: GPU-CPU read index #2 was updated by thread 0, req 184 completed
+CPU: CPU-GPU write index #3 was updated by thread 0
+CPU: CPU-GPU write index #3 was updated by thread 1
+CPU: GPU-CPU read index #3 was updated by thread 1, req 187 completed
+CPU: GPU-CPU read index #3 was updated by thread 0, req 186 completed
+CPU: CPU-GPU write index #4 was updated by thread 0
+CPU: CPU-GPU write index #4 was updated by thread 1
+CPU: GPU-CPU read index #4 was updated by thread 1, req 189 completed
+CPU: GPU-CPU read index #4 was updated by thread 0, req 188 completed
+CPU: CPU-GPU write index #5 was updated by thread 0
+CPU: CPU-GPU write index #5 was updated by thread 1
+CPU: GPU-CPU read index #5 was updated by thread 1, req 191 completed
+CPU: GPU-CPU read index #5 was updated by thread 0, req 190 completed
+CPU: CPU-GPU write index #6 was updated by thread 0
+CPU: CPU-GPU write index #6 was updated by thread 1
+CPU: GPU-CPU read index #6 was updated by thread 1, req 193 completed
+CPU: GPU-CPU read index #6 was updated by thread 0, req 192 completed
+CPU: CPU-GPU write index #7 was updated by thread 0
+CPU: CPU-GPU write index #7 was updated by thread 1
+CPU: GPU-CPU read index #7 was updated by thread 1, req 195 completed
+CPU: GPU-CPU read index #7 was updated by thread 0, req 194 completed
+CPU: CPU-GPU write index #8 was updated by thread 0
+CPU: CPU-GPU write index #8 was updated by thread 1
+CPU: GPU-CPU read index #8 was updated by thread 1, req 197 completed
+CPU: GPU-CPU read index #8 was updated by thread 0, req 196 completed
+CPU: CPU-GPU write index #9 was updated by thread 0
+CPU: CPU-GPU write index #9 was updated by thread 1
+CPU: GPU-CPU read index #9 was updated by thread 1, req 199 completed
+CPU: GPU-CPU read index #9 was updated by thread 0, req 198 completed
+
+CPU: RELEASE STREAMS
+
+GPU: Req #1 was dequeued in stream 1
+GPU: Req #0 was dequeued in stream 0
+GPU: Ack #1 was enqueued in stream 1
+GPU: Ack #0 was enqueued in stream 0
+GPU: Req #3 was dequeued in stream 1
+GPU: Req #2 was dequeued in stream 0
+GPU: Ack #3 was enqueued in stream 1
+GPU: Ack #2 was enqueued in stream 0
+GPU: Req #5 was dequeued in stream 1
+GPU: Req #4 was dequeued in stream 0
+GPU: Ack #5 was enqueued in stream 1
+GPU: Ack #4 was enqueued in stream 0
+GPU: Req #7 was dequeued in stream 1
+GPU: Req #6 was dequeued in stream 0
+GPU: Ack #7 was enqueued in stream 1
+GPU: Ack #6 was enqueued in stream 0
+GPU: Req #9 was dequeued in stream 1
+GPU: Req #8 was dequeued in stream 0
+GPU: Ack #9 was enqueued in stream 1
+GPU: Ack #8 was enqueued in stream 0
+GPU: Req #11 was dequeued in stream 1
+GPU: Req #10 was dequeued in stream 0
+GPU: Ack #11 was enqueued in stream 1
+GPU: Ack #10 was enqueued in stream 0
+GPU: Req #13 was dequeued in stream 1
+GPU: Req #12 was dequeued in stream 0
+GPU: Ack #13 was enqueued in stream 1
+GPU: Ack #12 was enqueued in stream 0
+GPU: Req #15 was dequeued in stream 1
+GPU: Req #14 was dequeued in stream 0
+GPU: Ack #15 was enqueued in stream 1
+GPU: Ack #14 was enqueued in stream 0
+GPU: Req #17 was dequeued in stream 1
+GPU: Req #16 was dequeued in stream 0
+GPU: Ack #17 was enqueued in stream 1
+GPU: Ack #16 was enqueued in stream 0
+GPU: Req #19 was dequeued in stream 1
+GPU: Req #18 was dequeued in stream 0
+GPU: Ack #19 was enqueued in stream 1
+GPU: Ack #18 was enqueued in stream 0
+GPU: Req #21 was dequeued in stream 1
+GPU: Req #20 was dequeued in stream 0
+GPU: Ack #21 was enqueued in stream 1
+GPU: Ack #20 was enqueued in stream 0
+GPU: Req #23 was dequeued in stream 1
+GPU: Req #22 was dequeued in stream 0
+GPU: Ack #23 was enqueued in stream 1
+GPU: Ack #22 was enqueued in stream 0
+GPU: Req #25 was dequeued in stream 1
+GPU: Req #24 was dequeued in stream 0
+GPU: Ack #25 was enqueued in stream 1
+GPU: Ack #24 was enqueued in stream 0
+GPU: Req #27 was dequeued in stream 1
+GPU: Req #26 was dequeued in stream 0
+GPU: Ack #27 was enqueued in stream 1
+GPU: Ack #26 was enqueued in stream 0
+GPU: Req #29 was dequeued in stream 1
+GPU: Req #28 was dequeued in stream 0
+GPU: Ack #29 was enqueued in stream 1
+GPU: Ack #28 was enqueued in stream 0
+GPU: Req #31 was dequeued in stream 1
+GPU: Req #30 was dequeued in stream 0
+GPU: Ack #31 was enqueued in stream 1
+GPU: Ack #30 was enqueued in stream 0
+GPU: Req #33 was dequeued in stream 1
+GPU: Req #32 was dequeued in stream 0
+GPU: Ack #33 was enqueued in stream 1
+GPU: Ack #32 was enqueued in stream 0
+GPU: Req #35 was dequeued in stream 1
+GPU: Req #34 was dequeued in stream 0
+GPU: Ack #35 was enqueued in stream 1
+GPU: Ack #34 was enqueued in stream 0
+GPU: Req #37 was dequeued in stream 1
+GPU: Req #36 was dequeued in stream 0
+GPU: Ack #37 was enqueued in stream 1
+GPU: Ack #36 was enqueued in stream 0
+GPU: Req #39 was dequeued in stream 1
+GPU: Req #38 was dequeued in stream 0
+GPU: Ack #39 was enqueued in stream 1
+GPU: Ack #38 was enqueued in stream 0
+GPU: Req #41 was dequeued in stream 1
+GPU: Req #40 was dequeued in stream 0
+GPU: Ack #41 was enqueued in stream 1
+GPU: Ack #40 was enqueued in stream 0
+GPU: Req #43 was dequeued in stream 1
+GPU: Req #42 was dequeued in stream 0
+GPU: Ack #43 was enqueued in stream 1
+GPU: Ack #42 was enqueued in stream 0
+GPU: Req #45 was dequeued in stream 1
+GPU: Req #44 was dequeued in stream 0
+GPU: Ack #45 was enqueued in stream 1
+GPU: Ack #44 was enqueued in stream 0
+GPU: Req #47 was dequeued in stream 1
+GPU: Req #46 was dequeued in stream 0
+GPU: Ack #47 was enqueued in stream 1
+GPU: Ack #46 was enqueued in stream 0
+GPU: Req #49 was dequeued in stream 1
+GPU: Req #48 was dequeued in stream 0
+GPU: Ack #49 was enqueued in stream 1
+GPU: Ack #48 was enqueued in stream 0
+GPU: Req #51 was dequeued in stream 1
+GPU: Req #50 was dequeued in stream 0
+GPU: Ack #51 was enqueued in stream 1
+GPU: Ack #50 was enqueued in stream 0
+GPU: Req #53 was dequeued in stream 1
+GPU: Req #52 was dequeued in stream 0
+GPU: Ack #53 was enqueued in stream 1
+GPU: Ack #52 was enqueued in stream 0
+GPU: Req #55 was dequeued in stream 1
+GPU: Req #54 was dequeued in stream 0
+GPU: Ack #55 was enqueued in stream 1
+GPU: Ack #54 was enqueued in stream 0
+GPU: Req #57 was dequeued in stream 1
+GPU: Req #56 was dequeued in stream 0
+GPU: Ack #57 was enqueued in stream 1
+GPU: Ack #56 was enqueued in stream 0
+GPU: Req #59 was dequeued in stream 1
+GPU: Req #58 was dequeued in stream 0
+GPU: Ack #59 was enqueued in stream 1
+GPU: Ack #58 was enqueued in stream 0
+GPU: Req #61 was dequeued in stream 1
+GPU: Req #60 was dequeued in stream 0
+GPU: Ack #61 was enqueued in stream 1
+GPU: Ack #60 was enqueued in stream 0
+GPU: Req #63 was dequeued in stream 1
+GPU: Req #62 was dequeued in stream 0
+GPU: Ack #63 was enqueued in stream 1
+GPU: Ack #62 was enqueued in stream 0
+GPU: Req #65 was dequeued in stream 1
+GPU: Req #64 was dequeued in stream 0
+GPU: Ack #65 was enqueued in stream 1
+GPU: Ack #64 was enqueued in stream 0
+GPU: Req #67 was dequeued in stream 1
+GPU: Req #66 was dequeued in stream 0
+GPU: Ack #67 was enqueued in stream 1
+GPU: Ack #66 was enqueued in stream 0
+GPU: Req #69 was dequeued in stream 1
+GPU: Req #68 was dequeued in stream 0
+GPU: Ack #69 was enqueued in stream 1
+GPU: Ack #68 was enqueued in stream 0
+GPU: Req #71 was dequeued in stream 1
+GPU: Req #70 was dequeued in stream 0
+GPU: Ack #71 was enqueued in stream 1
+GPU: Ack #70 was enqueued in stream 0
+GPU: Req #73 was dequeued in stream 1
+GPU: Req #72 was dequeued in stream 0
+GPU: Ack #73 was enqueued in stream 1
+GPU: Ack #72 was enqueued in stream 0
+GPU: Req #75 was dequeued in stream 1
+GPU: Req #74 was dequeued in stream 0
+GPU: Ack #75 was enqueued in stream 1
+GPU: Ack #74 was enqueued in stream 0
+GPU: Req #77 was dequeued in stream 1
+GPU: Req #76 was dequeued in stream 0
+GPU: Ack #77 was enqueued in stream 1
+GPU: Ack #76 was enqueued in stream 0
+GPU: Req #79 was dequeued in stream 1
+GPU: Req #78 was dequeued in stream 0
+GPU: Ack #79 was enqueued in stream 1
+GPU: Ack #78 was enqueued in stream 0
+GPU: Req #81 was dequeued in stream 1
+GPU: Req #80 was dequeued in stream 0
+GPU: Ack #81 was enqueued in stream 1
+GPU: Ack #80 was enqueued in stream 0
+GPU: Req #83 was dequeued in stream 1
+GPU: Req #82 was dequeued in stream 0
+GPU: Ack #83 was enqueued in stream 1
+GPU: Ack #82 was enqueued in stream 0
+GPU: Req #85 was dequeued in stream 1
+GPU: Req #84 was dequeued in stream 0
+GPU: Ack #85 was enqueued in stream 1
+GPU: Ack #84 was enqueued in stream 0
+GPU: Req #87 was dequeued in stream 1
+GPU: Req #86 was dequeued in stream 0
+GPU: Ack #87 was enqueued in stream 1
+GPU: Ack #86 was enqueued in stream 0
+GPU: Req #89 was dequeued in stream 1
+GPU: Req #88 was dequeued in stream 0
+GPU: Ack #89 was enqueued in stream 1
+GPU: Ack #88 was enqueued in stream 0
+GPU: Req #91 was dequeued in stream 1
+GPU: Req #90 was dequeued in stream 0
+GPU: Ack #91 was enqueued in stream 1
+GPU: Ack #90 was enqueued in stream 0
+GPU: Req #93 was dequeued in stream 1
+GPU: Req #92 was dequeued in stream 0
+GPU: Ack #93 was enqueued in stream 1
+GPU: Ack #92 was enqueued in stream 0
+GPU: Req #95 was dequeued in stream 1
+GPU: Req #94 was dequeued in stream 0
+GPU: Ack #95 was enqueued in stream 1
+GPU: Ack #94 was enqueued in stream 0
+GPU: Req #97 was dequeued in stream 1
+GPU: Req #96 was dequeued in stream 0
+GPU: Ack #97 was enqueued in stream 1
+GPU: Ack #96 was enqueued in stream 0
+GPU: Req #99 was dequeued in stream 1
+GPU: Req #98 was dequeued in stream 0
+GPU: Ack #99 was enqueued in stream 1
+GPU: Ack #98 was enqueued in stream 0
+GPU: Req #101 was dequeued in stream 1
+GPU: Req #100 was dequeued in stream 0
+GPU: Ack #101 was enqueued in stream 1
+GPU: Ack #100 was enqueued in stream 0
+GPU: Req #103 was dequeued in stream 1
+GPU: Req #102 was dequeued in stream 0
+GPU: Ack #103 was enqueued in stream 1
+GPU: Ack #102 was enqueued in stream 0
+GPU: Req #105 was dequeued in stream 1
+GPU: Req #104 was dequeued in stream 0
+GPU: Ack #105 was enqueued in stream 1
+GPU: Ack #104 was enqueued in stream 0
+GPU: Req #107 was dequeued in stream 1
+GPU: Req #106 was dequeued in stream 0
+GPU: Ack #107 was enqueued in stream 1
+GPU: Ack #106 was enqueued in stream 0
+GPU: Req #109 was dequeued in stream 1
+GPU: Req #108 was dequeued in stream 0
+GPU: Ack #109 was enqueued in stream 1
+GPU: Ack #108 was enqueued in stream 0
+GPU: Req #111 was dequeued in stream 1
+GPU: Req #110 was dequeued in stream 0
+GPU: Ack #111 was enqueued in stream 1
+GPU: Ack #110 was enqueued in stream 0
+GPU: Req #113 was dequeued in stream 1
+GPU: Req #112 was dequeued in stream 0
+GPU: Ack #113 was enqueued in stream 1
+GPU: Ack #112 was enqueued in stream 0
+GPU: Req #115 was dequeued in stream 1
+GPU: Req #114 was dequeued in stream 0
+GPU: Ack #115 was enqueued in stream 1
+GPU: Ack #114 was enqueued in stream 0
+GPU: Req #117 was dequeued in stream 1
+GPU: Req #116 was dequeued in stream 0
+GPU: Ack #117 was enqueued in stream 1
+GPU: Ack #116 was enqueued in stream 0
+GPU: Req #119 was dequeued in stream 1
+GPU: Req #118 was dequeued in stream 0
+GPU: Ack #119 was enqueued in stream 1
+GPU: Ack #118 was enqueued in stream 0
+GPU: Req #121 was dequeued in stream 1
+GPU: Req #120 was dequeued in stream 0
+GPU: Ack #121 was enqueued in stream 1
+GPU: Ack #120 was enqueued in stream 0
+GPU: Req #123 was dequeued in stream 1
+GPU: Req #122 was dequeued in stream 0
+GPU: Ack #123 was enqueued in stream 1
+GPU: Ack #122 was enqueued in stream 0
+GPU: Req #125 was dequeued in stream 1
+GPU: Req #124 was dequeued in stream 0
+GPU: Ack #125 was enqueued in stream 1
+GPU: Ack #124 was enqueued in stream 0
+GPU: Req #127 was dequeued in stream 1
+GPU: Req #126 was dequeued in stream 0
+GPU: Ack #127 was enqueued in stream 1
+GPU: Ack #126 was enqueued in stream 0
+GPU: Req #129 was dequeued in stream 1
+GPU: Req #128 was dequeued in stream 0
+GPU: Ack #129 was enqueued in stream 1
+GPU: Ack #128 was enqueued in stream 0
+GPU: Req #131 was dequeued in stream 1
+GPU: Req #130 was dequeued in stream 0
+GPU: Ack #131 was enqueued in stream 1
+GPU: Ack #130 was enqueued in stream 0
+GPU: Req #133 was dequeued in stream 1
+GPU: Req #132 was dequeued in stream 0
+GPU: Ack #133 was enqueued in stream 1
+GPU: Ack #132 was enqueued in stream 0
+GPU: Req #135 was dequeued in stream 1
+GPU: Req #134 was dequeued in stream 0
+GPU: Ack #135 was enqueued in stream 1
+GPU: Ack #134 was enqueued in stream 0
+GPU: Req #137 was dequeued in stream 1
+GPU: Req #136 was dequeued in stream 0
+GPU: Ack #137 was enqueued in stream 1
+GPU: Ack #136 was enqueued in stream 0
+GPU: Req #139 was dequeued in stream 1
+GPU: Req #138 was dequeued in stream 0
+GPU: Ack #139 was enqueued in stream 1
+GPU: Ack #138 was enqueued in stream 0
+GPU: Req #141 was dequeued in stream 1
+GPU: Req #140 was dequeued in stream 0
+GPU: Ack #141 was enqueued in stream 1
+GPU: Ack #140 was enqueued in stream 0
+GPU: Req #143 was dequeued in stream 1
+GPU: Req #142 was dequeued in stream 0
+GPU: Ack #143 was enqueued in stream 1
+GPU: Ack #142 was enqueued in stream 0
+GPU: Req #145 was dequeued in stream 1
+GPU: Req #144 was dequeued in stream 0
+GPU: Ack #145 was enqueued in stream 1
+GPU: Ack #144 was enqueued in stream 0
+GPU: Req #147 was dequeued in stream 1
+GPU: Req #146 was dequeued in stream 0
+GPU: Ack #147 was enqueued in stream 1
+GPU: Ack #146 was enqueued in stream 0
+GPU: Req #149 was dequeued in stream 1
+GPU: Req #148 was dequeued in stream 0
+GPU: Ack #149 was enqueued in stream 1
+GPU: Ack #148 was enqueued in stream 0
+GPU: Req #151 was dequeued in stream 1
+GPU: Req #150 was dequeued in stream 0
+GPU: Ack #151 was enqueued in stream 1
+GPU: Ack #150 was enqueued in stream 0
+GPU: Req #153 was dequeued in stream 1
+GPU: Req #152 was dequeued in stream 0
+GPU: Ack #153 was enqueued in stream 1
+GPU: Ack #152 was enqueued in stream 0
+GPU: Req #155 was dequeued in stream 1
+GPU: Req #154 was dequeued in stream 0
+GPU: Ack #155 was enqueued in stream 1
+GPU: Ack #154 was enqueued in stream 0
+GPU: Req #157 was dequeued in stream 1
+GPU: Req #156 was dequeued in stream 0
+GPU: Ack #157 was enqueued in stream 1
+GPU: Ack #156 was enqueued in stream 0
+GPU: Req #159 was dequeued in stream 1
+GPU: Req #158 was dequeued in stream 0
+GPU: Ack #159 was enqueued in stream 1
+GPU: Ack #158 was enqueued in stream 0
+GPU: Req #161 was dequeued in stream 1
+GPU: Req #160 was dequeued in stream 0
+GPU: Ack #161 was enqueued in stream 1
+GPU: Ack #160 was enqueued in stream 0
+GPU: Req #163 was dequeued in stream 1
+GPU: Req #162 was dequeued in stream 0
+GPU: Ack #163 was enqueued in stream 1
+GPU: Ack #162 was enqueued in stream 0
+GPU: Req #165 was dequeued in stream 1
+GPU: Req #164 was dequeued in stream 0
+GPU: Ack #165 was enqueued in stream 1
+GPU: Ack #164 was enqueued in stream 0
+GPU: Req #167 was dequeued in stream 1
+GPU: Req #166 was dequeued in stream 0
+GPU: Ack #167 was enqueued in stream 1
+GPU: Ack #166 was enqueued in stream 0
+GPU: Req #169 was dequeued in stream 1
+GPU: Req #168 was dequeued in stream 0
+GPU: Ack #169 was enqueued in stream 1
+GPU: Ack #168 was enqueued in stream 0
+GPU: Req #171 was dequeued in stream 1
+GPU: Req #170 was dequeued in stream 0
+GPU: Ack #171 was enqueued in stream 1
+GPU: Ack #170 was enqueued in stream 0
+GPU: Req #173 was dequeued in stream 1
+GPU: Req #172 was dequeued in stream 0
+GPU: Ack #173 was enqueued in stream 1
+GPU: Ack #172 was enqueued in stream 0
+GPU: Req #175 was dequeued in stream 1
+GPU: Req #174 was dequeued in stream 0
+GPU: Ack #175 was enqueued in stream 1
+GPU: Ack #174 was enqueued in stream 0
+GPU: Req #177 was dequeued in stream 1
+GPU: Req #176 was dequeued in stream 0
+GPU: Ack #177 was enqueued in stream 1
+GPU: Ack #176 was enqueued in stream 0
+GPU: Req #179 was dequeued in stream 1
+GPU: Req #178 was dequeued in stream 0
+GPU: Ack #179 was enqueued in stream 1
+GPU: Ack #178 was enqueued in stream 0
+GPU: Req #181 was dequeued in stream 1
+GPU: Req #180 was dequeued in stream 0
+GPU: Ack #181 was enqueued in stream 1
+GPU: Ack #180 was enqueued in stream 0
+GPU: Req #183 was dequeued in stream 1
+GPU: Req #182 was dequeued in stream 0
+GPU: Ack #183 was enqueued in stream 1
+GPU: Ack #182 was enqueued in stream 0
+GPU: Req #185 was dequeued in stream 1
+GPU: Req #184 was dequeued in stream 0
+GPU: Ack #185 was enqueued in stream 1
+GPU: Ack #184 was enqueued in stream 0
+GPU: Req #187 was dequeued in stream 1
+GPU: Req #186 was dequeued in stream 0
+GPU: Ack #187 was enqueued in stream 1
+GPU: Ack #186 was enqueued in stream 0
+GPU: Req #189 was dequeued in stream 1
+GPU: Req #188 was dequeued in stream 0
+GPU: Ack #189 was enqueued in stream 1
+GPU: Ack #188 was enqueued in stream 0
+GPU: Req #191 was dequeued in stream 1
+GPU: Req #190 was dequeued in stream 0
+GPU: Ack #191 was enqueued in stream 1
+GPU: Ack #190 was enqueued in stream 0
+GPU: Req #193 was dequeued in stream 1
+GPU: Req #192 was dequeued in stream 0
+GPU: Ack #193 was enqueued in stream 1
+GPU: Ack #192 was enqueued in stream 0
+GPU: Req #195 was dequeued in stream 1
+GPU: Req #194 was dequeued in stream 0
+GPU: Ack #195 was enqueued in stream 1
+GPU: Ack #194 was enqueued in stream 0
+GPU: Req #197 was dequeued in stream 1
+GPU: Req #196 was dequeued in stream 0
+GPU: Ack #197 was enqueued in stream 1
+GPU: Ack #196 was enqueued in stream 0
+GPU: Req #199 was dequeued in stream 1
+GPU: Req #198 was dequeued in stream 0
+GPU: Ack #199 was enqueued in stream 1
+GPU: Ack #198 was enqueued in stream 0
+mode = queue
+load = 0.000000 (req/sec)
+threads = 1024
+average distance between images 0.000000
+throughput = 10472.221512 (req/sec)
+average latency = -1531118948463.093506 (msec)
