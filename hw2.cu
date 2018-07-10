@@ -1,3 +1,15 @@
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#include "cuda_runtime.h"
+#include "device_launch_parameters.h"
+#include "device_functions.h"
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <limits.h>
+#include <assert.h>
+#include <windows.h>
+#else
 /* compile with: nvcc -O3 -maxrregcount=32 hw2.cu -o hw2 */
 
 #include <stdio.h>
@@ -5,6 +17,7 @@
 #include <unistd.h>
 #include <assert.h>
 #include <string.h>
+#endif
 
 #define IMG_DIMENSION 32
 #define N_IMG_PAIRS 10000
@@ -14,6 +27,15 @@
 typedef unsigned char uchar;
 #define OUT
 
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#define CUDA_CHECK(f) do {                                                                  \
+    cudaError_t e = f;                                                                      \
+    if (e != cudaSuccess) {                                                                 \
+        printf("Cuda failure %s:%d: '%s'\n", __FILE__, __LINE__, cudaGetErrorString(e));    \
+        return 1;                                                                           \
+    }                                                                                       \
+} while (0)
+#else
 #define CUDA_CHECK(f) do {                                                                  \
     cudaError_t e = f;                                                                      \
     if (e != cudaSuccess) {                                                                 \
@@ -21,15 +43,61 @@ typedef unsigned char uchar;
         exit(1);                                                                            \
     }                                                                                       \
 } while (0)
+#endif
 
 #define SQR(a) ((a) * (a))
 
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if !defined(WIN32_LEAN_AND_MEAN)
+#define WIN32_LEAN_AND_MEAN
+#endif
+double static inline get_time_msec(void) {
+    LARGE_INTEGER t;
+    static double oofreq;
+    static int checkedForHighResTimer;
+    static BOOL hasHighResTimer;
+
+    if (!checkedForHighResTimer)
+    {
+        hasHighResTimer = QueryPerformanceFrequency(&t);
+        oofreq = 1000.0 / (double)t.QuadPart;
+        checkedForHighResTimer = 1;
+    }
+
+    if (hasHighResTimer)
+    {
+        QueryPerformanceCounter(&t);
+        return (double)t.QuadPart * oofreq;
+    }
+    else
+    {
+        return (double)GetTickCount();
+    }
+}
+void usleep(unsigned int usec)
+{
+    HANDLE timer;
+    LARGE_INTEGER ft;
+
+    ft.QuadPart = -(10 * (__int64)usec);
+
+    timer = CreateWaitableTimer(NULL, TRUE, NULL);
+    SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
+    WaitForSingleObject(timer, INFINITE);
+    CloseHandle(timer);
+}
+#define _CRT_RAND_S
+int rand_r(unsigned int *pseed) {
+    srand(*pseed);
+    return rand();
+}
+#else
 double static inline get_time_msec(void) {
     struct timeval t;
     gettimeofday(&t, NULL);
     return t.tv_sec * 1e+3 + t.tv_usec * 1e-3;
 }
-
+#endif
 struct stream_node {
 	cudaStream_t Stream;
 	int stream_id;
@@ -106,7 +174,7 @@ void image_to_histogram(uchar *image, int *histogram) {
 
 double histogram_distance(int *h1, int *h2) {
     /* we'll use the chi-square distance */
-    float distance = 0;
+    double distance = 0;
     for (int i = 0; i < 256; i++) {
         if (h1[i] + h2[i] != 0) {
             distance += ((double)SQR(h1[i] - h2[i])) / (h1[i] + h2[i]);
@@ -175,7 +243,7 @@ int main(int argc, char *argv[]) {
 
     load_image_pairs(images1, images2);
     double t_start, t_finish;
-    double total_distance;
+    double total_distance=0;
 #if 1
     /* using CPU */
     printf("\n=== CPU ===\n");
