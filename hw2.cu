@@ -1,3 +1,16 @@
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#include "cuda_runtime.h"
+#include "device_launch_parameters.h"
+#include "device_functions.h"
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <limits.h>
+#include <assert.h>
+#include <windows.h>
+#include <intrin.h>
+#else
 /* compile with: nvcc -O3 -maxrregcount=32 hw2.cu -o hw2 */
 
 #include <stdio.h>
@@ -5,10 +18,11 @@
 #include <unistd.h>
 #include <assert.h>
 #include <string.h>
+#endif
 
 #define IMG_DIMENSION 32
 #define N_IMG_PAIRS 10000
-#define NREQUESTS 4
+#define NREQUESTS 1234
 #define NSTREAMS 64
 #define MAXREGCOUNT 32
 #define QUEUENODES 10
@@ -16,6 +30,15 @@
 typedef unsigned char uchar;
 #define OUT
 
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#define CUDA_CHECK(f) do {                                                                  \
+    cudaError_t e = f;                                                                      \
+    if (e != cudaSuccess) {                                                                 \
+        printf("Cuda failure %s:%d: '%s'\n", __FILE__, __LINE__, cudaGetErrorString(e));    \
+        return 1;                                                                           \
+    }                                                                                       \
+} while (0)
+#else
 #define CUDA_CHECK(f) do {                                                                  \
     cudaError_t e = f;                                                                      \
     if (e != cudaSuccess) {                                                                 \
@@ -23,15 +46,61 @@ typedef unsigned char uchar;
         exit(1);                                                                            \
     }                                                                                       \
 } while (0)
+#endif
 
 #define SQR(a) ((a) * (a))
 
+#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
+#if !defined(WIN32_LEAN_AND_MEAN)
+#define WIN32_LEAN_AND_MEAN
+#endif
+#define __sync_synchronize() _ReadWriteBarrier()
+double static inline get_time_msec(void) {
+    LARGE_INTEGER t;
+    static double oofreq;
+    static int checkedForHighResTimer;
+    static BOOL hasHighResTimer;
+
+    if (!checkedForHighResTimer)
+    {
+        hasHighResTimer = QueryPerformanceFrequency(&t);
+        oofreq = 1000.0 / (double)t.QuadPart;
+        checkedForHighResTimer = 1;
+    }
+
+    if (hasHighResTimer)
+    {
+        QueryPerformanceCounter(&t);
+        return (double)t.QuadPart * oofreq;
+    }
+    else
+    {
+        return (double)GetTickCount();
+    }
+}
+void usleep(unsigned int usec)
+{
+    HANDLE timer;
+    LARGE_INTEGER ft;
+
+    ft.QuadPart = -(10 * (__int64)usec);
+
+    timer = CreateWaitableTimer(NULL, TRUE, NULL);
+    SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
+    WaitForSingleObject(timer, INFINITE);
+    CloseHandle(timer);
+}
+int rand_r(unsigned int *pseed) {
+    srand(*pseed);
+    return rand();
+}
+#else
 double static inline get_time_msec(void) {
     struct timeval t;
     gettimeofday(&t, NULL);
     return t.tv_sec * 1e+3 + t.tv_usec * 1e-3;
 }
-
+#endif
 struct stream_node {
 	cudaStream_t Stream;
 	int stream_id;
@@ -45,9 +114,9 @@ typedef struct _thread_node {
 } thread_node;
 
 typedef struct _threads_queue {
-	uchar read_index;
-	uchar write_index;
-	thread_node queue_array[QUEUENODES];
+	volatile uchar read_index;
+    volatile uchar write_index;
+    volatile thread_node queue_array[QUEUENODES];
 } threads_queue;
 
 /* we'll use these to rate limit the request load */
@@ -151,26 +220,57 @@ __global__ void gpu_histogram_distance(int *h1, int *h2, double *distance) {
     }
 }
 
-__global__ void process_queues (volatile threads_queue *dev_gpu_cpu_queues, volatile threads_queue *dev_cpu_gpu_queues, const int nrequests) {
-	  int req_count = 0;
-	  int req_id;
-	  while (req_count < nrequests ){
-		  // Dequeue request
-		  if (dev_cpu_gpu_queues[blockIdx.x].read_index != dev_cpu_gpu_queues[blockIdx.x].write_index) {
-			  req_id = dev_cpu_gpu_queues[blockIdx.x].queue_array[dev_cpu_gpu_queues[blockIdx.x].read_index].req_id;
-			  dev_cpu_gpu_queues[blockIdx.x].read_index = (dev_cpu_gpu_queues[blockIdx.x].read_index + 1) % QUEUENODES;
-			  printf("GPU: Req #%d was dequeued in TB: %d", req_id, blockIdx.x);
-		  } else { return; }
-		  __threadfence_system();
+__global__ void process_queues (volatile threads_queue *dev_gpu_cpu_queues, volatile threads_queue *dev_cpu_gpu_queues, const signed int max_simult_blocks) {
+	int req_id = -1;
+    __shared__ bool         was_deq;
+    __shared__ unsigned int req_count;
+    volatile uchar *dcpu_gpu_read_idx  = &dev_cpu_gpu_queues[blockIdx.x].read_index;
+    volatile uchar *dcpu_gpu_write_idx = &dev_cpu_gpu_queues[blockIdx.x].write_index;
+    volatile uchar *dgpu_cpu_read_idx  = &dev_gpu_cpu_queues[blockIdx.x].read_index;
+    volatile uchar *dgpu_cpu_write_idx = &dev_gpu_cpu_queues[blockIdx.x].write_index;
+    int nrequests = NREQUESTS / max_simult_blocks + !(blockIdx.x >= NREQUESTS % max_simult_blocks);
 
-      	if (dev_gpu_cpu_queues[blockIdx.x].read_index != (dev_gpu_cpu_queues[blockIdx.x].write_index + 1) % QUEUENODES) {
-      		// Enqueue
-      		dev_gpu_cpu_queues[blockIdx.x].queue_array[dev_gpu_cpu_queues[blockIdx.x].write_index].req_id = req_id;
-      		dev_gpu_cpu_queues[blockIdx.x].write_index = (dev_gpu_cpu_queues[blockIdx.x].write_index + 1) % QUEUENODES;
-  			printf("GPU: write index #%d was updated by thread %d\n", dev_gpu_cpu_queues[blockIdx.x].write_index, blockIdx.x);
-      	}
-      	__threadfence_system();
-	  }
+    if (threadIdx.x == 0) {
+        was_deq = false; req_count = 0;
+        //printf("GPU: nrequests = %d in TB #%d\n", nrequests, blockIdx.x);
+    }
+    __threadfence_system();
+
+    while (req_count < nrequests) {
+        if (threadIdx.x == 0) {
+            volatile uchar cpu_gpu_read_idx = *dcpu_gpu_read_idx;
+            volatile uchar cpu_gpu_write_idx = *dcpu_gpu_write_idx;
+            __threadfence_system();
+            // Dequeue request
+            if (!was_deq && cpu_gpu_read_idx != cpu_gpu_write_idx) {
+                req_id = dev_cpu_gpu_queues[blockIdx.x].queue_array[cpu_gpu_read_idx].req_id;
+                *dcpu_gpu_read_idx = (cpu_gpu_read_idx + 1) % QUEUENODES;
+                was_deq = true;
+                __threadfence_system();
+                //printf("GPUp: Req #%d was dequeued in TB #%d by thread %d, RC = %d\n", req_id, blockIdx.x, threadIdx.x, req_count);
+            };
+        }
+        //__threadfence();
+        __syncthreads();
+
+
+        if (threadIdx.x == 0) {
+            volatile uchar gpu_cpu_read_idx = *dgpu_cpu_read_idx;
+            volatile uchar gpu_cpu_write_idx = *dgpu_cpu_write_idx;
+            __threadfence_system();
+            if (was_deq && (gpu_cpu_read_idx != (gpu_cpu_write_idx + 1) % QUEUENODES)) {
+                // Enqueue
+                dev_gpu_cpu_queues[blockIdx.x].queue_array[gpu_cpu_write_idx].req_id = req_id;
+                *dgpu_cpu_write_idx = (gpu_cpu_write_idx + 1) % QUEUENODES;
+                __threadfence_system();
+                req_count++;
+                __threadfence();
+                was_deq = false;
+                //printf("GPUp: Req #%d was completed in TB #%d by thread %d, RC = %d\n", req_id, blockIdx.x, threadIdx.x, req_count);
+            }
+        }
+        //printf("GPU: Req #%d in TB: %d by thread %d\n", req_count, blockIdx.x, threadIdx.x);
+    }
 }
 
 void print_usage_and_die(char *progname) {
@@ -211,7 +311,7 @@ int main(int argc, char *argv[]) {
     load_image_pairs(images1, images2);
     double t_start, t_finish;
     double total_distance;
-#if 1
+#if 0
     /* using CPU */
     printf("\n=== CPU ===\n");
     int histogram1[256];
@@ -309,17 +409,17 @@ int main(int argc, char *argv[]) {
                update req_t_end of completed requests
                update total_distance */
 
-        	for (int j = 0; j < NSTREAMS; j++) {
-        		if ( streams_array[j].req_in_processing != -1) {
-        			if ( cudaStreamQuery(streams_array[j].Stream) == cudaSuccess) {
-        				req_t_end[streams_array[j].req_in_processing] = get_time_msec();
-        				CUDA_CHECK( cudaMemcpyAsync(cpu_hist_distance, &(gpu_hist_distance[streams_array[j].stream_id * 256]), sizeof(double), cudaMemcpyDeviceToHost, streams_array[j].Stream));
-        				total_distance += *cpu_hist_distance;
-        				streams_array[j].req_in_processing = -1;
-        				free_streams++;
-        			}
-        		}
-        	}
+            for (int j = 0; j < NSTREAMS; j++) {
+                if ( streams_array[j].req_in_processing != -1) {
+                    if ( cudaStreamQuery(streams_array[j].Stream) == cudaSuccess) {
+                        req_t_end[streams_array[j].req_in_processing] = get_time_msec();
+                        CUDA_CHECK( cudaMemcpyAsync(cpu_hist_distance, &(gpu_hist_distance[streams_array[j].stream_id * 256]), sizeof(double), cudaMemcpyDeviceToHost, streams_array[j].Stream));
+                        total_distance += *cpu_hist_distance;
+                        streams_array[j].req_in_processing = -1;
+                        free_streams++;
+                    }
+                }
+            }
 
             rate_limit_wait(&rate_limit);
             req_t_start[i] = get_time_msec();
@@ -416,7 +516,6 @@ int main(int argc, char *argv[]) {
     		cpu_gpu_queues[i].write_index = 0;
     		gpu_cpu_queues[i].read_index = 0;
     		gpu_cpu_queues[i].write_index = 0;
-    		//CUDA_CHECK( cudaHostGetDevicePointer (&(cpu_gpu_queues[i].read_devp), cpu_gpu_queues[i].queue_array, 0) );
     	}
 
 
@@ -439,9 +538,9 @@ int main(int argc, char *argv[]) {
         CUDA_CHECK( cudaHostGetDevicePointer ((void **)&dev_cpu_gpu_queues, (void *)cpu_gpu_queues, 0) );
 
         //Start CUDA kernel
-        process_queues<<<max_simult_blocks, threads_queue_mode>>>(dev_gpu_cpu_queues, dev_cpu_gpu_queues, NREQUESTS);
+        process_queues<<<max_simult_blocks, threads_queue_mode>>>(dev_gpu_cpu_queues, dev_cpu_gpu_queues, max_simult_blocks);
 
-        for (int i = 0; i < NREQUESTS; ) {
+        for (unsigned int i = 0, k = 0; k < NREQUESTS ;) {
 
             /* TODO check producer consumer queue for any responses.
                don't block. if no responses are there we'll check again in the next iteration
@@ -449,32 +548,42 @@ int main(int argc, char *argv[]) {
                update total_distance */
         	for (int j = 0; j < max_simult_blocks; j++) {
         		// Get current GPU->CPU queue indexes
-        		uchar gpu_cpu_read_index = gpu_cpu_queues[j].read_index;
+                volatile uchar *pgpu_cpu_read_index = &gpu_cpu_queues[j].read_index;
+                volatile uchar *pgpu_cpu_write_index = &gpu_cpu_queues[j].write_index;
+                volatile uchar read_idx  = *pgpu_cpu_read_index;
+                volatile uchar write_idx = *pgpu_cpu_write_index;
+                __sync_synchronize();
+                volatile int req_id = gpu_cpu_queues[j].queue_array[read_idx].req_id;
+                __sync_synchronize();
         		// Dequeue completed
-        		if (gpu_cpu_read_index != gpu_cpu_queues[j].write_index) {
-        			req_t_start[gpu_cpu_queues[j].queue_array[gpu_cpu_read_index].req_id] = get_time_msec();
-        			gpu_cpu_queues[j].read_index = (gpu_cpu_read_index + 1) % QUEUENODES;
-        			printf("CPU: GPU-CPU read index #%d was updated by thread %d\n", gpu_cpu_read_index, j);
-        		}
+        		if (read_idx != write_idx) {
+        			req_t_start[req_id] = get_time_msec();
+                    *pgpu_cpu_read_index = (read_idx + 1) % QUEUENODES;
+                    __sync_synchronize();
+                    //printf("CPU: GPU-CPU read index #%d was updated by TB #%d, completion #%d\n", read_idx, j, k);
+                    // Advance completed requests counter
+                    k++;
+                }
         	}
 
-            rate_limit_wait(&rate_limit);
-            int img_idx = i % N_IMG_PAIRS;
-            req_t_start[i] = get_time_msec();
 
-            /* TODO place memcpy's and kernels in a queue */
-
-            // Check for first queue with available node
-            for (int j = 0; j < max_simult_blocks; j++) {
-            	if (cpu_gpu_queues[j].read_index != (cpu_gpu_queues[j].write_index + 1) % QUEUENODES) {
-            		// Enqueue
-            		cpu_gpu_queues[j].queue_array[cpu_gpu_queues[j].write_index].req_id = img_idx;
-            		cpu_gpu_queues[j].write_index = (cpu_gpu_queues[j].write_index + 1) % QUEUENODES;
-        			printf("CPU: CPU-GPU write index #%d was updated by thread %d\n", cpu_gpu_queues[j].write_index, j);
-            		// Advance request id
-            		i++;
-            		break;
-            	}
+            if (i < NREQUESTS) {
+            	rate_limit_wait(&rate_limit);
+            	int queue_idx = i % max_simult_blocks;
+            	req_t_start[i] = get_time_msec();
+				volatile uchar read_idx = cpu_gpu_queues[queue_idx].read_index;
+				volatile uchar write_idx = cpu_gpu_queues[queue_idx].write_index;
+				volatile uchar *pcpu_gpu_write_index = &cpu_gpu_queues[queue_idx].write_index;
+				__sync_synchronize();
+				if (read_idx != (write_idx + 1) % QUEUENODES) {
+					// Enqueue
+					cpu_gpu_queues[queue_idx].queue_array[write_idx].req_id = i;
+					*pcpu_gpu_write_index = (write_idx + 1) % QUEUENODES;
+					__sync_synchronize();
+					//printf("CPU: CPU-GPU write index #%d was increased by thread %d\n", write_idx, queue_idx);
+					// Advance request id
+					i++;
+				}
             }
         }
         /* TODO wait until you have responses for all requests */
