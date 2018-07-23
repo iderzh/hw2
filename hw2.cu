@@ -22,7 +22,7 @@
 
 #define IMG_DIMENSION 32
 #define N_IMG_PAIRS 10000
-#define NREQUESTS 1234
+#define NREQUESTS 10000
 #define NSTREAMS 64
 #define MAXREGCOUNT 32
 #define QUEUENODES 10
@@ -102,19 +102,19 @@ double static inline get_time_msec(void) {
 }
 #endif
 struct stream_node {
-	cudaStream_t Stream;
-	int stream_id;
-	int req_in_processing;
+    cudaStream_t Stream;
+    int stream_id;
+    int req_in_processing;
 };
 typedef stream_node streamNode;
 
 typedef struct _thread_node {
-	int req_id;
-	float result;
+    volatile int req_id;
+    volatile double result;
 } thread_node;
 
 typedef struct _threads_queue {
-	volatile uchar read_index;
+    volatile uchar read_index;
     volatile uchar write_index;
     volatile thread_node queue_array[QUEUENODES];
 } threads_queue;
@@ -220,21 +220,28 @@ __global__ void gpu_histogram_distance(int *h1, int *h2, double *distance) {
     }
 }
 
-__global__ void process_queues (volatile threads_queue *dev_gpu_cpu_queues, volatile threads_queue *dev_cpu_gpu_queues, const signed int max_simult_blocks) {
-	int req_id = -1;
+__global__ void process_queues (volatile threads_queue *dev_gpu_cpu_queues, volatile threads_queue *dev_cpu_gpu_queues,
+                                const int max_simult_blocks,
+                                volatile uchar *gpu_image1,
+                                volatile uchar *gpu_image2) {
+    __shared__ int          req_id;
     __shared__ bool         was_deq;
     __shared__ unsigned int req_count;
+    __shared__ uchar s_image1[IMG_DIMENSION * IMG_DIMENSION], s_image2[IMG_DIMENSION * IMG_DIMENSION];
+    __shared__ int s_hist1[256], s_hist2[256];
+    __shared__ float s_distance[256];
+    __shared__ uchar pattern1[IMG_DIMENSION * IMG_DIMENSION], pattern2[IMG_DIMENSION * IMG_DIMENSION];
+    int nrequests = NREQUESTS / max_simult_blocks + !(blockIdx.x >= NREQUESTS % max_simult_blocks);
+    int copy_iter = (IMG_DIMENSION * IMG_DIMENSION) / blockDim.x;
     volatile uchar *dcpu_gpu_read_idx  = &dev_cpu_gpu_queues[blockIdx.x].read_index;
     volatile uchar *dcpu_gpu_write_idx = &dev_cpu_gpu_queues[blockIdx.x].write_index;
     volatile uchar *dgpu_cpu_read_idx  = &dev_gpu_cpu_queues[blockIdx.x].read_index;
     volatile uchar *dgpu_cpu_write_idx = &dev_gpu_cpu_queues[blockIdx.x].write_index;
-    int nrequests = NREQUESTS / max_simult_blocks + !(blockIdx.x >= NREQUESTS % max_simult_blocks);
 
     if (threadIdx.x == 0) {
         was_deq = false; req_count = 0;
-        //printf("GPU: nrequests = %d in TB #%d\n", nrequests, blockIdx.x);
     }
-    __threadfence_system();
+    __threadfence_block();
 
     while (req_count < nrequests) {
         if (threadIdx.x == 0) {
@@ -245,31 +252,97 @@ __global__ void process_queues (volatile threads_queue *dev_gpu_cpu_queues, vola
             if (!was_deq && cpu_gpu_read_idx != cpu_gpu_write_idx) {
                 req_id = dev_cpu_gpu_queues[blockIdx.x].queue_array[cpu_gpu_read_idx].req_id;
                 *dcpu_gpu_read_idx = (cpu_gpu_read_idx + 1) % QUEUENODES;
-                was_deq = true;
                 __threadfence_system();
-                //printf("GPUp: Req #%d was dequeued in TB #%d by thread %d, RC = %d\n", req_id, blockIdx.x, threadIdx.x, req_count);
-            };
+                was_deq = true;
+                __threadfence_block();
+            }
         }
-        //__threadfence();
+        __syncthreads();
+        // Init data structures for request processing
+        if (was_deq) {
+            if (threadIdx.x < 256) {
+                s_hist1[threadIdx.x] = 0;
+                s_hist2[threadIdx.x] = 0;
+                s_distance[threadIdx.x] = 0;
+            }
+            for (int i = 0; i < copy_iter; i++) {
+                s_image1[i * blockDim.x + threadIdx.x] = gpu_image1[req_id * IMG_DIMENSION * IMG_DIMENSION + i * blockDim.x + threadIdx.x];
+                s_image2[i * blockDim.x + threadIdx.x] = gpu_image2[req_id * IMG_DIMENSION * IMG_DIMENSION + i * blockDim.x + threadIdx.x];
+                pattern1[i * blockDim.x + threadIdx.x] = 0;
+                pattern2[i * blockDim.x + threadIdx.x] = 0;
+            }
+        }
+        __threadfence_block();
+
+        // Calculate image patterns
+        if (was_deq) {
+            for (int j = 0; j < copy_iter; j++) {
+            	pattern1[j * blockDim.x + threadIdx.x] = local_binary_pattern((uchar *)s_image1, (j * blockDim.x + threadIdx.x) / IMG_DIMENSION, (j * blockDim.x + threadIdx.x) % IMG_DIMENSION);
+            }
+
+            for (int j = 0; j < copy_iter; j++) {
+            	pattern2[j * blockDim.x + threadIdx.x] = local_binary_pattern((uchar *)s_image2, (j * blockDim.x + threadIdx.x) / IMG_DIMENSION, (j * blockDim.x + threadIdx.x) % IMG_DIMENSION);
+            }
+        }
+        __threadfence_block();
+
+        // Calculate histograms
+        if (was_deq) {
+        	for (int j = 0; j < copy_iter; j++) {
+        		if (pattern1[j * blockDim.x + threadIdx.x] != 0) {
+        			atomicAdd((int *)&(s_hist1[pattern1[j * blockDim.x + threadIdx.x]]), 1);
+        		}
+        		if (pattern2[j * blockDim.x + threadIdx.x] != 0) {
+        			atomicAdd((int *)&(s_hist2[pattern2[j * blockDim.x + threadIdx.x]]), 1);
+        		}
+        		__threadfence_block();
+            }
+        }
+        __threadfence_block();
+
+        if (was_deq) {
+            if (threadIdx.x < 256) {
+                if (s_hist1[threadIdx.x] + s_hist1[threadIdx.x] != 0) {
+                    s_distance[threadIdx.x] = ((float)SQR(s_hist1[threadIdx.x] - s_hist2[threadIdx.x])) / (s_hist1[threadIdx.x] + s_hist2[threadIdx.x]);
+                    __threadfence();
+                }
+                // Comment IF statement above and uncomment s_distance[threadIdx.x] = 1 below
+                // It will result average distance 256, I used it for histogram distance validation
+                //s_distance[threadIdx.x] = 1;
+            }
+        }
         __syncthreads();
 
-
+        if (was_deq) {
+            if (threadIdx.x < 256) {
+                int length = 256;
+                __threadfence_block();
+                while (length > 1) {
+                    if (threadIdx.x < length / 2) {
+                        s_distance[threadIdx.x] = s_distance[threadIdx.x] + s_distance[threadIdx.x + length / 2];
+                        __threadfence();
+                    }
+                    length /= 2;
+                    __syncthreads();
+                }
+            }
+        }
+        __syncthreads();
         if (threadIdx.x == 0) {
             volatile uchar gpu_cpu_read_idx = *dgpu_cpu_read_idx;
             volatile uchar gpu_cpu_write_idx = *dgpu_cpu_write_idx;
-            __threadfence_system();
             if (was_deq && (gpu_cpu_read_idx != (gpu_cpu_write_idx + 1) % QUEUENODES)) {
                 // Enqueue
+                dev_gpu_cpu_queues[blockIdx.x].queue_array[gpu_cpu_write_idx].result = s_distance[0];
                 dev_gpu_cpu_queues[blockIdx.x].queue_array[gpu_cpu_write_idx].req_id = req_id;
+                __threadfence_system();
                 *dgpu_cpu_write_idx = (gpu_cpu_write_idx + 1) % QUEUENODES;
                 __threadfence_system();
                 req_count++;
-                __threadfence();
                 was_deq = false;
-                //printf("GPUp: Req #%d was completed in TB #%d by thread %d, RC = %d\n", req_id, blockIdx.x, threadIdx.x, req_count);
             }
         }
-        //printf("GPU: Req #%d in TB: %d by thread %d\n", req_count, blockIdx.x, threadIdx.x);
+        __syncthreads();
     }
 }
 
@@ -311,7 +384,7 @@ int main(int argc, char *argv[]) {
     load_image_pairs(images1, images2);
     double t_start, t_finish;
     double total_distance;
-#if 0
+#if 1
     /* using CPU */
     printf("\n=== CPU ===\n");
     int histogram1[256];
@@ -353,6 +426,7 @@ int main(int argc, char *argv[]) {
             gpu_histogram_distance<<<1, 256>>>(gpu_hist1, gpu_hist2, gpu_hist_distance);
             cudaMemcpy(&cpu_hist_distance, gpu_hist_distance, sizeof(double), cudaMemcpyDeviceToHost);
             total_distance += cpu_hist_distance;
+            //printf("CPU: Req #%d, Result = %lf\n", i, cpu_hist_distance);
         }
         CUDA_CHECK(cudaDeviceSynchronize());
         t_finish = get_time_msec();
@@ -379,8 +453,8 @@ int main(int argc, char *argv[]) {
 
     /* TODO allocate / initialize memory, streams, etc... */
     uchar *gpu_image1, *gpu_image2; // TODO: allocate with cudaMalloc
-    int *gpu_hist1, *gpu_hist2; // TODO: allocate with cudaMalloc
-    double *gpu_hist_distance; //TODO: allocate with cudaMalloc
+    int *gpu_hist1 = NULL, *gpu_hist2 = NULL; // TODO: allocate with cudaMalloc
+    double *gpu_hist_distance = NULL; //TODO: allocate with cudaMalloc
     double *cpu_hist_distance;
 
     streamNode streams_array[NSTREAMS] = {0};
@@ -388,7 +462,7 @@ int main(int argc, char *argv[]) {
 
     double ti = get_time_msec();
     if (mode == PROGRAM_MODE_STREAMS) {
-    	// Allocate CUDA memory for STREAMS
+        // Allocate CUDA memory for STREAMS
         CUDA_CHECK(cudaMalloc(&gpu_image1, IMG_DIMENSION * IMG_DIMENSION * NSTREAMS));
         CUDA_CHECK(cudaMalloc(&gpu_image2, IMG_DIMENSION * IMG_DIMENSION * NSTREAMS));
         CUDA_CHECK(cudaMalloc(&gpu_hist1, 256 * sizeof(int) * NSTREAMS));
@@ -398,9 +472,9 @@ int main(int argc, char *argv[]) {
 
         // Init array of stream nodes
         for (int j = 0; j < NSTREAMS; j++) {
-        	streams_array[j].stream_id = j;
-        	streams_array[j].req_in_processing = -1;
-        	CUDA_CHECK( cudaStreamCreate(&streams_array[j].Stream));
+            streams_array[j].stream_id = j;
+            streams_array[j].req_in_processing = -1;
+            CUDA_CHECK( cudaStreamCreate(&streams_array[j].Stream));
         }
 
         for (int i = 0; i < NREQUESTS; i++) {
@@ -428,17 +502,17 @@ int main(int argc, char *argv[]) {
             /* TODO place memcpy's and kernels in a stream */
             if (free_streams > 0) {
 
-            	// Find first free stream
-            	streamNode *busy_streams;
-            	for (int j = 0; j < NSTREAMS; j++) {
-            		if (streams_array[j].req_in_processing == -1) {
-            			busy_streams = &streams_array[j];
-            			break;
-            		}
-            	}
+                // Find first free stream
+                streamNode *busy_streams;
+                for (int j = 0; j < NSTREAMS; j++) {
+                    if (streams_array[j].req_in_processing == -1) {
+                        busy_streams = &streams_array[j];
+                        break;
+                    }
+                }
 
-            	busy_streams->req_in_processing = i;
-            	free_streams--;
+                busy_streams->req_in_processing = i;
+                free_streams--;
 
                 // Enqueue data copy and kernel execution for selected stream
                 CUDA_CHECK(cudaMemcpyAsync(&(gpu_image1[busy_streams->stream_id * IMG_DIMENSION * IMG_DIMENSION]), &images1[img_idx * IMG_DIMENSION * IMG_DIMENSION], IMG_DIMENSION * IMG_DIMENSION, cudaMemcpyHostToDevice, busy_streams->Stream));
@@ -452,93 +526,89 @@ int main(int argc, char *argv[]) {
             }
         }
         /* TODO now make sure to wait for all streams to finish */
-    	for (int j = 0; j < NSTREAMS; j++) {
-    		if (streams_array[j].req_in_processing != -1) {
-    			CUDA_CHECK( cudaStreamSynchronize(streams_array[j].Stream) );
-    			req_t_end[streams_array[j].req_in_processing] = get_time_msec();
-    		}
-    	}
+        for (int j = 0; j < NSTREAMS; j++) {
+            if (streams_array[j].req_in_processing != -1) {
+                CUDA_CHECK( cudaStreamSynchronize(streams_array[j].Stream) );
+                req_t_end[streams_array[j].req_in_processing] = get_time_msec();
+            }
+        }
 
         for (int j = 0; j < NSTREAMS; j++) {
-        	CUDA_CHECK( cudaStreamDestroy(streams_array[j].Stream));
+            CUDA_CHECK( cudaStreamDestroy(streams_array[j].Stream));
         }
 
         CUDA_CHECK( cudaFree(gpu_hist_distance) );
         CUDA_CHECK( cudaFreeHost(cpu_hist_distance) );
 
     } else if (mode == PROGRAM_MODE_QUEUE) {
-    	// Check for CUDA device and calculate amount of CPU<->GPU queues accordingly to it's capabilities
-    	int deviceCount = 0, cuda_device = 0;
-    	CUDA_CHECK( cudaGetDeviceCount(&deviceCount) );
-    	if (deviceCount > 0) {
-    		printf("CUDA Device(s) found, will use first available device: ");
-    	} else {
-    		printf("No CUDA Device found, terminating the program!\n");
-    		assert(0);
-    	}
-    	cudaSetDevice(cuda_device);
-    	cudaDeviceProp deviceProp;
-    	cudaGetDeviceProperties(&deviceProp, cuda_device);
-    	printf("%s\n", deviceProp.name);
-    	if (	threads_queue_mode > IMG_DIMENSION * IMG_DIMENSION  ||
-    			threads_queue_mode <= 0    ||
-    			deviceProp.maxThreadsPerBlock < IMG_DIMENSION * IMG_DIMENSION
-    		)
-    	{
-    		printf("Wrong amount of threads requested for 32x32 images or your device incapable to run 1024 threads in one block,\nPlease enter #threads = 1024 or less.\n");
-    		assert (0);
-    	}
+        // Check for CUDA device and calculate amount of CPU<->GPU queues accordingly to it's capabilities
+        int deviceCount = 0, cuda_device = 0;
+        CUDA_CHECK( cudaGetDeviceCount(&deviceCount) );
+        if (deviceCount > 0) {
+            printf("CUDA Device(s) found, will use first available device: ");
+        } else {
+            printf("No CUDA Device found, terminating the program!\n");
+            assert(0);
+        }
+        cudaSetDevice(cuda_device);
+        cudaDeviceProp deviceProp;
+        cudaGetDeviceProperties(&deviceProp, cuda_device);
+        printf("%s\n", deviceProp.name);
+        if (	threads_queue_mode > IMG_DIMENSION * IMG_DIMENSION  ||
+                threads_queue_mode <= 0    ||
+                deviceProp.maxThreadsPerBlock < IMG_DIMENSION * IMG_DIMENSION
+            )
+        {
+            printf("Wrong amount of threads requested for 32x32 images or your device incapable to run 1024 threads in one block,\nPlease enter #threads = 1024 or less.\n");
+            assert (0);
+        }
 
-    	if ( deviceProp.canMapHostMemory == 0){
-    		printf("Your CUDA Device doesn't support cudaDeviceMapHost, terminating the program!\n");
-    		assert(0);
-    	}
+        if ( deviceProp.canMapHostMemory == 0){
+            printf("Your CUDA Device doesn't support cudaDeviceMapHost, terminating the program!\n");
+            assert(0);
+        }
 
-    	unsigned int max_simult_blocks = deviceProp.multiProcessorCount * (deviceProp.maxThreadsPerMultiProcessor / threads_queue_mode);
-    	printf("This device is capable to run %d thread blocks simultaneously.\n", max_simult_blocks);
-    	if ( (deviceProp.regsPerBlock / (max_simult_blocks * threads_queue_mode)) < MAXREGCOUNT) {
-    		max_simult_blocks = deviceProp.regsPerBlock / ( threads_queue_mode * MAXREGCOUNT );
-    		printf("Amount of running blocks (queue pairs) was reduced to %d due to device Registers limitation\n", max_simult_blocks);
-    	}
-    	if ( (deviceProp.sharedMemPerBlock / (2 * (IMG_DIMENSION * IMG_DIMENSION) + 2 * sizeof (int) * 256 + sizeof (double) * 256)) < 1) {
-    		printf("No enough Shared memory per block, terminating the program!\n");
-    		assert(0);
-    	}
+        unsigned int max_simult_blocks = deviceProp.multiProcessorCount * (deviceProp.maxThreadsPerMultiProcessor / threads_queue_mode);
+        printf("This device is capable to run %d thread blocks (TB) simultaneously.\n", max_simult_blocks);
+        if ( (deviceProp.regsPerBlock / (max_simult_blocks * threads_queue_mode)) < MAXREGCOUNT) {
+            max_simult_blocks = deviceProp.regsPerBlock / ( threads_queue_mode * MAXREGCOUNT );
+            printf("Amount of running TBs (queue pairs) was reduced to %d due to GPU Registers limitation per TB\n", max_simult_blocks);
+        }
+        if ( (deviceProp.sharedMemPerBlock / (2 * (IMG_DIMENSION * IMG_DIMENSION) + 2 * sizeof (int) * 256 + sizeof (double) * 256)) < 1) {
+            printf("No enough Shared memory per block, terminating the program!\n");
+            assert(0);
+        }
 
-    	// Create CPU<->GPU queues
-    	volatile threads_queue *cpu_gpu_queues;
-    	volatile threads_queue *gpu_cpu_queues;
-    	CUDA_CHECK( cudaHostAlloc(&gpu_cpu_queues, sizeof (threads_queue) * max_simult_blocks, cudaHostAllocMapped) );
-		CUDA_CHECK( cudaHostAlloc(&cpu_gpu_queues, sizeof (threads_queue) * max_simult_blocks, cudaHostAllocMapped) );
+        // Create CPU<->GPU queues
+        volatile threads_queue *cpu_gpu_queues;
+        volatile threads_queue *gpu_cpu_queues;
+        CUDA_CHECK( cudaHostAlloc(&gpu_cpu_queues, sizeof (threads_queue) * max_simult_blocks, cudaHostAllocMapped) );
+        CUDA_CHECK( cudaHostAlloc(&cpu_gpu_queues, sizeof (threads_queue) * max_simult_blocks, cudaHostAllocMapped) );
 
-    	for (int i = 0; i < max_simult_blocks; i++) {
-    		cpu_gpu_queues[i].read_index = 0;
-    		cpu_gpu_queues[i].write_index = 0;
-    		gpu_cpu_queues[i].read_index = 0;
-    		gpu_cpu_queues[i].write_index = 0;
-    	}
-
-
-    	float *gpu_total_distance_f;
-    	thread_node *cpu_hist_distance_node;
+        for (int i = 0; i < max_simult_blocks; i++) {
+            cpu_gpu_queues[i].read_index = 0;
+            cpu_gpu_queues[i].write_index = 0;
+            gpu_cpu_queues[i].read_index = 0;
+            gpu_cpu_queues[i].write_index = 0;
+        }
 
         CUDA_CHECK( cudaMalloc(&gpu_image1, N_IMG_PAIRS * IMG_DIMENSION * IMG_DIMENSION) );
         CUDA_CHECK( cudaMalloc(&gpu_image2, N_IMG_PAIRS * IMG_DIMENSION * IMG_DIMENSION) );
-        CUDA_CHECK( cudaMalloc(&gpu_hist1, sizeof (int) * 256 * N_IMG_PAIRS) );
-        CUDA_CHECK( cudaMalloc(&gpu_hist2, sizeof (int) * 256 * N_IMG_PAIRS) );
-        CUDA_CHECK( cudaMalloc(&gpu_total_distance_f, sizeof (float) * 256 * max_simult_blocks) );
-        CUDA_CHECK( cudaHostAlloc(&cpu_hist_distance_node, sizeof(thread_node), 0) );
 
         CUDA_CHECK( cudaMemcpy(gpu_image1, images1, N_IMG_PAIRS * IMG_DIMENSION * IMG_DIMENSION, cudaMemcpyHostToDevice) );
         CUDA_CHECK( cudaMemcpy(gpu_image2, images2, N_IMG_PAIRS * IMG_DIMENSION * IMG_DIMENSION, cudaMemcpyHostToDevice) );
-        CUDA_CHECK( cudaMemset(gpu_total_distance_f,0 , sizeof(float) * 256 * max_simult_blocks));
 
         volatile threads_queue *dev_cpu_gpu_queues, *dev_gpu_cpu_queues;
         CUDA_CHECK( cudaHostGetDevicePointer ((void **)&dev_gpu_cpu_queues, (void *)gpu_cpu_queues, 0) );
         CUDA_CHECK( cudaHostGetDevicePointer ((void **)&dev_cpu_gpu_queues, (void *)cpu_gpu_queues, 0) );
+        CUDA_CHECK( cudaDeviceSynchronize() );
 
         //Start CUDA kernel
-        process_queues<<<max_simult_blocks, threads_queue_mode>>>(dev_gpu_cpu_queues, dev_cpu_gpu_queues, max_simult_blocks);
+        process_queues<<<max_simult_blocks, threads_queue_mode>>>(  dev_gpu_cpu_queues,
+                                                                    dev_cpu_gpu_queues,
+                                                                    max_simult_blocks,
+                                                                    gpu_image1,
+                                                                    gpu_image2);
 
         for (unsigned int i = 0, k = 0; k < NREQUESTS ;) {
 
@@ -546,53 +616,52 @@ int main(int argc, char *argv[]) {
                don't block. if no responses are there we'll check again in the next iteration
                update req_t_end of completed requests
                update total_distance */
-        	for (int j = 0; j < max_simult_blocks; j++) {
-        		// Get current GPU->CPU queue indexes
+            for (int j = 0; j < max_simult_blocks; j++) {
+                // Get current GPU->CPU queue indexes
                 volatile uchar *pgpu_cpu_read_index = &gpu_cpu_queues[j].read_index;
                 volatile uchar *pgpu_cpu_write_index = &gpu_cpu_queues[j].write_index;
                 volatile uchar read_idx  = *pgpu_cpu_read_index;
                 volatile uchar write_idx = *pgpu_cpu_write_index;
-                __sync_synchronize();
+
                 volatile int req_id = gpu_cpu_queues[j].queue_array[read_idx].req_id;
-                __sync_synchronize();
-        		// Dequeue completed
-        		if (read_idx != write_idx) {
-        			req_t_start[req_id] = get_time_msec();
+                volatile double result = gpu_cpu_queues[j].queue_array[read_idx].result;
+
+                // Dequeue completed
+                if (read_idx != write_idx) {
+                    total_distance += result;
+                    req_t_end[req_id] = get_time_msec();
                     *pgpu_cpu_read_index = (read_idx + 1) % QUEUENODES;
                     __sync_synchronize();
-                    //printf("CPU: GPU-CPU read index #%d was updated by TB #%d, completion #%d\n", read_idx, j, k);
                     // Advance completed requests counter
                     k++;
                 }
-        	}
+            }
 
 
             if (i < NREQUESTS) {
-            	rate_limit_wait(&rate_limit);
-            	int queue_idx = i % max_simult_blocks;
-            	req_t_start[i] = get_time_msec();
-				volatile uchar read_idx = cpu_gpu_queues[queue_idx].read_index;
-				volatile uchar write_idx = cpu_gpu_queues[queue_idx].write_index;
-				volatile uchar *pcpu_gpu_write_index = &cpu_gpu_queues[queue_idx].write_index;
-				__sync_synchronize();
-				if (read_idx != (write_idx + 1) % QUEUENODES) {
-					// Enqueue
-					cpu_gpu_queues[queue_idx].queue_array[write_idx].req_id = i;
-					*pcpu_gpu_write_index = (write_idx + 1) % QUEUENODES;
-					__sync_synchronize();
-					//printf("CPU: CPU-GPU write index #%d was increased by thread %d\n", write_idx, queue_idx);
-					// Advance request id
-					i++;
-				}
+                rate_limit_wait(&rate_limit);
+                int queue_idx = i % max_simult_blocks;
+                req_t_start[i] = get_time_msec();
+                volatile uchar read_idx = cpu_gpu_queues[queue_idx].read_index;
+                volatile uchar write_idx = cpu_gpu_queues[queue_idx].write_index;
+                volatile uchar *pcpu_gpu_write_index = &cpu_gpu_queues[queue_idx].write_index;
+                if (read_idx != (write_idx + 1) % QUEUENODES) {
+                    // Enqueue
+                    cpu_gpu_queues[queue_idx].queue_array[write_idx].req_id = i;
+                    *pcpu_gpu_write_index = (write_idx + 1) % QUEUENODES;
+                    __sync_synchronize();
+                    //printf("CPU: CPU-GPU write index #%d was increased by thread %d\n", write_idx, queue_idx);
+                    // Advance request id
+                    i++;
+                }
             }
         }
         /* TODO wait until you have responses for all requests */
+        CUDA_CHECK( cudaDeviceSynchronize() );
 
         // Release memory allocations specific for threads flow
         CUDA_CHECK( cudaFreeHost((void *)gpu_cpu_queues) );
         CUDA_CHECK( cudaFreeHost((void *)cpu_gpu_queues) );
-        CUDA_CHECK( cudaFree(gpu_total_distance_f) );
-        CUDA_CHECK( cudaFreeHost(cpu_hist_distance_node) );
     } else {
         assert(0);
     }
@@ -600,8 +669,9 @@ int main(int argc, char *argv[]) {
 
     CUDA_CHECK( cudaFree(gpu_image1) );
     CUDA_CHECK( cudaFree(gpu_image2) );
-    CUDA_CHECK( cudaFree(gpu_hist1) );
-    CUDA_CHECK( cudaFree(gpu_hist2) );
+    if (gpu_hist1 != NULL) CUDA_CHECK( cudaFree(gpu_hist1) );
+    if (gpu_hist2 != NULL) CUDA_CHECK( cudaFree(gpu_hist2) );
+    if (gpu_hist_distance != NULL) CUDA_CHECK( cudaFree(gpu_hist_distance) );
 
     double avg_latency = 0;
     for (int j = 0; j < NREQUESTS; j++) {
@@ -612,7 +682,7 @@ int main(int argc, char *argv[]) {
     printf("mode = %s\n", mode == PROGRAM_MODE_STREAMS ? "streams" : "queue");
     printf("load = %lf (req/sec)\n", load);
     if (mode == PROGRAM_MODE_QUEUE) printf("threads = %d\n", threads_queue_mode);
-    printf("average distance between images %f\n", total_distance / NREQUESTS);
+    printf("average distance between images %lf\n", total_distance / NREQUESTS);
     printf("throughput = %lf (req/sec)\n", NREQUESTS / (tf - ti) * 1e+3);
     printf("average latency = %lf (msec)\n", avg_latency);
 
